@@ -1,0 +1,30 @@
+@import "tailwindcss";
+@import "./zuryo-theme.css";
+@import "@fontsource/manrope/400.css";
+@import "@fontsource/manrope/500.css";
+@import "@fontsource/manrope/600.css";
+@import "@fontsource/manrope/700.css";
+@import "@fontsource/manrope/800.css";
+
+body {
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background: var(--color-bg);
+    font-size: var(--text-base);
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+button:disabled {
+    cursor: not-allowed;
+}
+
+/* Grid items default to min-width:auto, so one wide child (a date strip, a tab bar) would stretch the whole page. */
+.grid > * {
+    min-width: 0;
+}

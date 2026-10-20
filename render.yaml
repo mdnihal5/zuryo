@@ -22,6 +22,19 @@ services:
             sync: false
           - key: TRUST_PROXY
             value: "1"
+          - key: MOCKPAY_ENABLED
+            value: "true"
+          - key: MOCKPAY_WEBHOOK_SECRET
+            generateValue: true
+          # https://zuryo-api.onrender.com (webhook target) and https://zuryo-web.onrender.com (hosted checkout)
+          - key: PUBLIC_API_URL
+            sync: false
+          - key: CLIENT_URL
+            sync: false
+          - key: OPENROUTER_API_KEY
+            sync: false
+          - key: OPENROUTER_MODEL
+            sync: false
 
     - type: web
       name: zuryo-web

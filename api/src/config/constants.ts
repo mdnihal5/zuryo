@@ -11,12 +11,10 @@ export const EARLY_START_MINUTES = 30; // trainer may start this long before sta
 export const SLOT_GRID_MINUTES = 30;
 export const MAX_ADVANCE_DAYS = 14;
 export const FREE_CANCEL_HOURS = 2;
+export const ALTERNATIVES_WINDOW_DAYS = 3;
 
-// Active = pending_payment, confirmed, in_progress (pending on purpose: an unpaid hold keeps the slot from being
-// sold twice). Overlap checks in our own queries say "not finished" instead of "active": "active" matches the
-// partial exclusion index, so Postgres answers it from that GiST index, and stress runs caught that index missing
-// a confirmed booking that a table scan found (cause unconfirmed). These checks run inside the zone lock and must
-// not depend on it; the exclusion constraints stay as the backstop.
+// Overlap checks say "not finished", not "active", so Postgres stays off the partial GiST index. They run
+// under the zone lock; the exclusion constraints are the backstop.
 export const FINISHED_STATUSES = ["completed", "cancelled", "payment_failed", "expired"] as const;
 export const HOLD_MINUTES = 10; // how long a booking waits for the gateway before the slot is released
 

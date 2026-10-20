@@ -45,7 +45,7 @@ export async function startSession(trainer: AuthUser, id: number) {
     return toBookingView(fresh, new Date(), "trainer");
 }
 
-export type RecordInput = {
+type RecordInput = {
     exercises: Exercise[];
     durationMinutes: number;
     trainerNotes: string | null;

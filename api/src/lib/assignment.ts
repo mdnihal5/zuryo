@@ -3,11 +3,8 @@ import type { RankedTrainer } from "../types/index.js";
 
 export type EligibleTrainer = { trainerId: number; name: string; sessionsThatDay: number; lat: number; lng: number };
 
-// The whole assignment rule, in one place:
-//   1. the preferred trainer, if eligible
-//   2. fewest sessions that day (spreads the work)
-//   3. nearest to the customer
-//   4. lowest trainer id (so the result is reproducible)
+// The whole assignment rule: preferred trainer if eligible, then fewest sessions that day, then nearest,
+// then lowest id (so the result is reproducible).
 export function rankTrainers(
     eligible: EligibleTrainer[],
     customer: { lat: number; lng: number },

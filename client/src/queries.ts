@@ -1,4 +1,4 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "./api";
 import type { Booking, Notification, Pack, Page, Profile, Recommendation, SessionRecord, TrainerCard } from "./types";
 
@@ -44,5 +44,3 @@ export const useNotifications = () =>
         queryFn: () => api<Notification[]>("/notifications"),
         refetchInterval: POLL_MS,
     });
-
-export { keepPreviousData };

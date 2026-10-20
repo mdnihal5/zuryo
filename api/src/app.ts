@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { config } from "./config/index.js";
 import { pool } from "./db/pool.js";
+import { log } from "./lib/logger.js";
 import {
     authRoutes,
     customerRoutes,
@@ -13,7 +14,7 @@ import {
     mockpayRoutes,
 } from "./routes/index.js";
 import { requestContext } from "./middleware/request-context.js";
-import { globalLimit } from "./middleware/rate-limit.js";
+import { globalLimit, webhookLimit } from "./middleware/rate-limit.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.js";
 
 export const app = express();
@@ -35,13 +36,16 @@ app.get("/healthz", (_req, res) => res.json({ ok: true }));
 app.get("/readyz", async (_req, res) => {
     const ok = await pool.query("SELECT 1").then(
         () => true,
-        () => false,
+        (err) => {
+            log.warn("readyz.db_unreachable", { message: err.message });
+            return false;
+        },
     );
     res.status(ok ? 200 : 503).json({ ok });
 });
 
 // Before express.json: the webhook needs the raw bytes to check the signature.
-app.use("/v1/payments", paymentsRoutes);
+app.use("/v1/payments", webhookLimit, paymentsRoutes);
 
 app.use(globalLimit);
 app.use(express.json({ limit: "100kb" }));

@@ -27,6 +27,7 @@ const env: NodeJS.ProcessEnv = {
     PATH: process.env.PATH,
     HOME: process.env.HOME,
     NODE_ENV: "production",
+    SEED_ALLOW_PRODUCTION: "1", // throwaway database
     PORT: String(API_PORT),
     DATABASE_URL: dbUrl,
     JWT_SECRET: "stress-secret-stress-secret-stress-secret-123",

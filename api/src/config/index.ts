@@ -21,6 +21,7 @@ const schema = z.object({
     MOCKPAY_WEBHOOK_DELAY_MS: z.coerce.number().int().min(0).default(1500),
     PUBLIC_API_URL: z.url().optional(),
     CLIENT_URL: z.url().optional(),
+    SEED_ALLOW_PRODUCTION: z.stringbool().default(false),
     LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 });
 
@@ -41,6 +42,7 @@ const corsOrigins = env.CORS_ORIGINS.split(",")
 export const config = Object.freeze({
     env: env.NODE_ENV,
     isProduction: env.NODE_ENV === "production",
+    seedAllowProduction: env.SEED_ALLOW_PRODUCTION,
     port: env.PORT,
     databaseUrl: env.DATABASE_URL,
     databaseSsl: env.DATABASE_SSL,

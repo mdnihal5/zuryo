@@ -26,7 +26,6 @@ export async function listTrainers(customer: AuthUser) {
     );
 }
 
-// date is a Kolkata calendar day (YYYY-MM-DD). Only slots from "now + travel time" onwards are offered.
 export async function listSlots(customer: AuthUser, date: string) {
     const now = new Date();
     await expireHolds(pool, now);

@@ -6,7 +6,6 @@ export async function findByEmail(db: Db, email: string) {
     return (rows[0] as { id: number; password_hash: string; token_version: number } | undefined) ?? null;
 }
 
-// Read on every authenticated request so a role change or logout takes effect immediately.
 export async function findAuthUser(db: Db, id: number) {
     const { rows } = await db.query(
         `SELECT u.id, u.name, u.role, u.token_version, t.id AS trainer_id

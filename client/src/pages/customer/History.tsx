@@ -264,7 +264,7 @@ export default function History() {
     const trainers = [...new Map(completed.map((b) => [b.trainer.id, b.trainer.name])).entries()];
     const shown = completed.filter((b) => {
         if (trainerFilter && String(b.trainer.id) !== trainerFilter) return false;
-        if (focusFilter && !focusOf(recordOf.get(b.id)).includes(focusFilter as never)) return false;
+        if (focusFilter && !focusOf(recordOf.get(b.id)).some((f) => f === focusFilter)) return false;
         return true;
     });
     const selected = completed.find((b) => b.id === picked) ?? shown[0];

@@ -1,4 +1,5 @@
 import { fileURLToPath } from "node:url";
+import { config } from "../config/index.js";
 import { pool, closePool, withTransaction } from "../db/pool.js";
 import { hashPassword } from "../lib/password.js";
 import { computePrice } from "../lib/pricing.js";
@@ -272,6 +273,10 @@ export async function seed(reset: boolean) {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
+    if (config.isProduction && !config.seedAllowProduction) {
+        console.error("Refusing to seed in production; set SEED_ALLOW_PRODUCTION=1 to override.");
+        process.exit(1);
+    }
     seed(process.argv.includes("--reset"))
         .then((did) =>
             console.log(

@@ -6,7 +6,7 @@ import { toBookingView } from "../lib/booking.mapper.js";
 import { pageOf, type Cursor } from "../lib/cursor.js";
 import { notFound } from "../lib/http-error.js";
 
-export type AdminFilters = {
+type AdminFilters = {
     status?: string;
     mode?: string;
     from?: Date;

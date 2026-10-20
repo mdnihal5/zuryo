@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { config } from "../config/index.js";
 
-export type TokenClaims = { sub: number; tv: number };
+type TokenClaims = { sub: number; tv: number };
 
 export const signToken = (userId: number, tokenVersion: number) =>
     jwt.sign({ tv: tokenVersion }, config.jwtSecret, {

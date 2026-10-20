@@ -6,10 +6,8 @@ import { sign, SIGNATURE_HEADER } from "../lib/mockpay.js";
 import { notFound } from "../lib/http-error.js";
 import { log } from "../lib/logger.js";
 
-// MockPay stands in for an external payment gateway (Cashfree, Razorpay, Paytm). Everything it does here
-// is something the real provider does on its own servers: keep the order, show a hosted checkout page,
-// take the customer's payment, and call our webhook. Nothing outside this file (and its queries, routes
-// and controller) may read mockpay_orders.
+// MockPay stands in for an external gateway: it owns the order, checkout and webhook call a real provider
+// would. Nothing outside this module may read mockpay_orders.
 
 const WEBHOOK_ATTEMPTS = 3;
 const RETRY_MS = 1000;

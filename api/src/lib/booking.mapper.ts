@@ -8,7 +8,7 @@ import type { BookingRow } from "../types/index.js";
 // The hosted checkout page of the (mock) gateway. A real gateway would give us this URL when the order is created.
 export const checkoutUrl = (providerOrderId: string) => `${config.clientUrl}/pay/${providerOrderId}`;
 
-export type Audience = "customer" | "trainer" | "admin";
+type Audience = "customer" | "trainer" | "admin";
 
 // The only place a booking row becomes JSON. Customers never see the assignment decision;
 // trainers see the customer's name only.
@@ -58,5 +58,3 @@ export function toBookingView(r: BookingRow, now: Date, audience: Audience) {
         ...(audience === "admin" && { assignment: r.assignment }),
     };
 }
-
-export type BookingView = ReturnType<typeof toBookingView>;

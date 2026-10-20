@@ -7,24 +7,35 @@ import { log } from "./lib/logger.js";
 
 const server = app.listen(config.port, () => log.info("server.started", { port: config.port, env: config.env }));
 
+// A tick is skipped while the previous sweep is still running, and shutdown waits for it.
+let inFlight: Promise<void> | null = null;
 const sweep = config.sweepEnabled
     ? setInterval(() => {
+          if (inFlight) return;
           const now = new Date();
-          Promise.all([completeDueSessions(now, "sweep"), expireHolds(undefined, now, "sweep")]).catch((err) =>
-              log.error("sweep.failed", { err: err?.name, code: err?.code }),
-          );
+          inFlight = Promise.all([completeDueSessions(now, "sweep"), expireHolds(undefined, now, "sweep")])
+              .then(() => {})
+              .catch((err) => log.error("sweep.failed", { err: err?.name, code: err?.code }))
+              .finally(() => {
+                  inFlight = null;
+              });
       }, config.sweepIntervalSeconds * 1000)
     : null;
 
 async function shutdown(signal: string) {
     log.info("server.stopping", { signal });
+    setTimeout(() => process.exit(1), 10_000).unref();
     if (sweep) clearInterval(sweep);
+    await inFlight;
     server.close(async () => {
         await closePool();
         process.exit(0);
     });
-    setTimeout(() => process.exit(1), 10_000).unref();
 }
+
+process.on("unhandledRejection", (reason) =>
+    log.error("process.unhandled_rejection", { message: reason instanceof Error ? reason.message : String(reason) }),
+);
 
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 process.on("SIGINT", () => shutdown("SIGINT"));

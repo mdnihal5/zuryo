@@ -26,6 +26,8 @@ const limiter = (windowMs: number, limit: number, key?: (ip: string, req: Parame
         : passThrough;
 
 export const globalLimit = limiter(60_000, 300);
+// Generous: the gateway is trusted by signature, this only caps a flood of forged calls.
+export const webhookLimit = limiter(60_000, 600);
 // Keyed by IP and submitted email, so one attacker cannot spray one password across many accounts
 // and one account cannot be hammered from many addresses unnoticed.
 export const loginLimit = limiter(15 * 60_000, 10, (ip, req) => `${ip}|${String(req.body?.email ?? "").toLowerCase()}`);

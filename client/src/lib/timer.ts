@@ -1,5 +1,5 @@
 export type SessionTimes = { startedAt: string; endsAt: string; warningAt: string };
-export type TimerPhase = "running" | "warning" | "done";
+type TimerPhase = "running" | "warning" | "done";
 
 export function timerPhase(session: SessionTimes, nowMs: number): TimerPhase {
     if (nowMs >= Date.parse(session.endsAt)) return "done";

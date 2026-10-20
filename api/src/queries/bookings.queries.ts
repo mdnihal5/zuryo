@@ -32,7 +32,7 @@ export const findForAdmin = (db: Db, id: number) => findWhere(db, "b.id = $1", [
 export const findByKey = (db: Db, customerId: number, key: string) =>
     findWhere(db, "b.customer_id = $1 AND b.idempotency_key = $2", [customerId, key]);
 
-export type NewBooking = {
+type NewBooking = {
     customerId: number;
     trainerId: number;
     mode: "instant" | "scheduled";
@@ -54,12 +54,8 @@ export type NewBooking = {
 
 const ZONE_LOCK = 1;
 
-// Bookings (and time off) in one zone queue on this lock for the length of their transaction; Postgres
-// releases it at commit or rollback, so a failed request cannot leak it. Being inside the lock means the
-// eligibility check sees every earlier booking as committed, so most races end as a clean "not available"
-// and the exclusion constraint is only the last line of defence. Without any lock, 100 concurrent inserts
-// for one trainer each saw the others' uncommitted rows and waited on each other; Postgres broke each such
-// deadlock after 1 s, one victim at a time, and the herd took a minute.
+// Serialises bookings per zone so eligibility sees earlier ones as committed; released at commit/rollback.
+// Without it, concurrent inserts for one trainer deadlocked on each other (1 s per victim).
 export const lockZone = (db: Db, zoneId: number) =>
     db.query("SELECT pg_advisory_xact_lock($1, $2)", [ZONE_LOCK, zoneId]);
 
@@ -178,9 +174,8 @@ export async function cancelConfirmed(db: Db, id: number, now: Date, reason: "cu
     return rowCount === 1;
 }
 
-// Completes every running session whose time is up, and writes the "completed" notifications in the
-// same statement. Only the statement whose UPDATE changes a row gets it back in RETURNING, so a read and
-// the sweep racing each other cannot produce two completions or two notifications.
+// Completes due sessions and writes their notifications in one statement; only the UPDATE that changes a
+// row gets it in RETURNING, so racing callers cannot double-notify.
 export async function completeDue(db: Db, now: Date, message: string) {
     const { rows } = await db.query(
         `WITH done AS (

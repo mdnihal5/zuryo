@@ -9,7 +9,15 @@ import * as usersQueries from "../queries/users.queries.js";
 import * as notifications from "./notifications.service.js";
 import { completeDueSessions } from "./sessions.service.js";
 import { createOrder, expireHolds } from "./payments.service.js";
-import { ALTERNATIVE_SLOTS, BUFFER_MINUTES, HOLD_MINUTES, SESSION_MINUTES, PAGE_DEFAULT } from "../config/constants.js";
+import {
+    ALTERNATIVES_WINDOW_DAYS,
+    ALTERNATIVE_SLOTS,
+    BUFFER_MINUTES,
+    FREE_CANCEL_HOURS,
+    HOLD_MINUTES,
+    SESSION_MINUTES,
+    PAGE_DEFAULT,
+} from "../config/constants.js";
 import { computePrice } from "../lib/pricing.js";
 import { rankTrainers } from "../lib/assignment.js";
 import { addMinutes } from "../lib/ist.js";
@@ -33,9 +41,8 @@ type Placement = {
     rescheduledFrom: number | null;
 };
 
-// Does the work of creating a booking inside the caller's transaction: price, trainer, booking row, then a
-// package deduction (confirmed at once) or a payment order (the booking waits as pending_payment and holds the
-// slot until the gateway's webhook confirms it). Returns the new booking id.
+// Creates a booking in the caller's transaction: package deduction (confirmed) or payment order
+// (pending_payment holds the slot until the webhook). Returns the new booking id.
 async function placeBooking(client: PoolClient, p: Placement): Promise<number> {
     const customer = await usersQueries.findProfileBasics(client, p.customerId);
     if (!customer || customer.zone_id === null || customer.lat === null || customer.lng === null) {
@@ -126,7 +133,7 @@ async function placeBooking(client: PoolClient, p: Placement): Promise<number> {
 
 async function alternativeSlots(client: PoolClient, zoneId: number, around: Date) {
     const from = alignUp(around);
-    const until = addMinutes(from, 3 * 24 * 60);
+    const until = addMinutes(from, ALTERNATIVES_WINDOW_DAYS * 24 * 60);
     const rules = await pricingQueries.get(client);
     const slots = await trainersQueries.listSlotStarts(client, zoneId, from, until, ALTERNATIVE_SLOTS + 1);
     return slots
@@ -135,23 +142,23 @@ async function alternativeSlots(client: PoolClient, zoneId: number, around: Date
         .map((s) => ({ startsAt: s.startsAt, ...computePrice(rules, s.startsAt) }));
 }
 
-// A request that fails may have lost a race against another request with the same key (which then
-// reports "trainer busy" or "already booked" against the first one's booking). If a booking with this
-// key exists, the first request succeeded, so the right answer is that booking, not the error.
-async function replayOrThrow(
-    err: unknown,
-    customerId: number,
-    key: string,
-    hash: string,
-    now: Date,
-): Promise<never | ReturnType<typeof toBookingView>> {
-    const winner = await bookingsQueries.findByKey(pool, customerId, key);
-    if (winner) {
-        assertSameRequest(winner.request_hash, hash);
-        return toBookingView(winner, now, "customer");
-    }
+// A retry returns the booking the first request made, before any other check.
+async function replayIfSeen(customerId: number, key: string, hash: string, now: Date) {
+    const existing = await bookingsQueries.findByKey(pool, customerId, key);
+    if (!existing) return null;
+    assertSameRequest(existing.request_hash, hash);
+    return toBookingView(existing, now, "customer");
+}
+
+// A failure may be a lost race against a request with the same key; if that booking exists, return it.
+async function replayOrThrow(err: unknown, customerId: number, key: string, hash: string, now: Date) {
+    const winner = await replayIfSeen(customerId, key, hash, now);
+    if (winner) return winner;
     throw err;
 }
+
+const notCancellable = () =>
+    conflict("BOOKING_NOT_CANCELLABLE", "A session that has started or finished cannot be cancelled.");
 
 // Money lines are written after the transaction commits, so a rolled-back booking never logs a charge or refund.
 function logCharge(b: BookingRow) {
@@ -163,7 +170,7 @@ function logRefund(b: BookingRow) {
     else log.info("payment.refunded", { bookingId: b.id, amountPaise: b.total_paise });
 }
 
-export type CreateInput = {
+type CreateInput = {
     mode: "instant" | "scheduled";
     startsAt?: Date;
     preferredTrainerId?: number;
@@ -173,7 +180,6 @@ export type CreateInput = {
 export async function createBooking(customer: AuthUser, input: CreateInput, key: string) {
     const now = new Date();
 
-    // A retry returns the booking the first request made, before any other check.
     const hash = requestHash({
         kind: "create",
         mode: input.mode,
@@ -181,11 +187,8 @@ export async function createBooking(customer: AuthUser, input: CreateInput, key:
         preferredTrainerId: input.preferredTrainerId,
         packageId: input.packageId,
     });
-    const existing = await bookingsQueries.findByKey(pool, customer.id, key);
-    if (existing) {
-        assertSameRequest(existing.request_hash, hash);
-        return toBookingView(existing, now, "customer");
-    }
+    const replay = await replayIfSeen(customer.id, key, hash, now);
+    if (replay) return replay;
 
     const startsAt = resolveStart(input.mode, input.startsAt, now);
     try {
@@ -238,13 +241,13 @@ export async function cancelBooking(customer: AuthUser, id: number) {
         const row = await bookingsQueries.findForCustomer(client, id, customer.id);
         if (!row) throw notFound("BOOKING_NOT_FOUND", "No booking with that id.");
         if (row.status !== "cancelled" && row.status !== "confirmed") {
-            throw conflict("BOOKING_NOT_CANCELLABLE", "A session that has started or finished cannot be cancelled.");
+            throw notCancellable();
         }
         // Cancelling twice is not an error; the second call just shows the cancelled booking.
         const changed = row.status === "confirmed" && (await cancelInTx(client, row, now, "customer"));
         const fresh = (await bookingsQueries.findForCustomer(client, id, customer.id))!;
         if (fresh.status !== "cancelled") {
-            throw conflict("BOOKING_NOT_CANCELLABLE", "A session that has started or finished cannot be cancelled.");
+            throw notCancellable();
         }
         if (changed) await notifications.bookingCancelled(client, fresh);
         return { fresh, changed };
@@ -270,11 +273,8 @@ export async function rescheduleBooking(customer: AuthUser, id: number, input: R
         startsAt: input.startsAt.toISOString(),
         preferredTrainerId: input.preferredTrainerId,
     });
-    const existing = await bookingsQueries.findByKey(pool, customer.id, key);
-    if (existing) {
-        assertSameRequest(existing.request_hash, hash);
-        return toBookingView(existing, now, "customer");
-    }
+    const replay = await replayIfSeen(customer.id, key, hash, now);
+    if (replay) return replay;
 
     const startsAt = resolveStart("scheduled", input.startsAt, now);
     try {
@@ -284,7 +284,10 @@ export async function rescheduleBooking(customer: AuthUser, id: number, input: R
             if (old.status !== "confirmed")
                 throw conflict("BOOKING_NOT_RESCHEDULABLE", "Only an upcoming booking can be rescheduled.");
             if (now > freeCancelDeadline(old.starts_at)) {
-                throw conflict("RESCHEDULE_TOO_LATE", "Rescheduling is only possible until 2 hours before the start.");
+                throw conflict(
+                    "RESCHEDULE_TOO_LATE",
+                    `Rescheduling is only possible until ${FREE_CANCEL_HOURS} hours before the start.`,
+                );
             }
             if (!(await cancelInTx(client, old, now, "rescheduled"))) {
                 throw conflict("BOOKING_NOT_RESCHEDULABLE", "This booking was just changed. Reload and try again.");
@@ -313,7 +316,7 @@ export async function rescheduleBooking(customer: AuthUser, id: number, input: R
     }
 }
 
-export type ListQuery = { view?: "upcoming" | "history"; limit?: number; cursor: Cursor | null };
+type ListQuery = { view?: "upcoming" | "history"; limit?: number; cursor: Cursor | null };
 
 export async function listMine(customer: AuthUser, q: ListQuery) {
     const now = new Date();

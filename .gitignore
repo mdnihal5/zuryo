@@ -4,3 +4,6 @@ dist/
 .tmp/
 .tmp-stress/
 *.log
+*.tsbuildinfo
+.tmp-*/
+coverage/

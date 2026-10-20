@@ -1,11 +1,123 @@
-# Zuryo app
+# Zuryo
 
-| Part | What | README |
-|---|---|---|
-| `api/` | Express + TypeScript + PostgreSQL REST API | [api/README.md](api/README.md) |
-| `client/` | React + TypeScript web client (customer, trainer, admin) | [client/README.md](client/README.md) |
-| `docs/api.md` | endpoint reference both are built against | [docs/api.md](docs/api.md) |
+Zuryo is a working MVP of on-demand fitness booking for residential communities. Customers book an instant or scheduled 60-minute session, pay for it (or use a package credit), and the system assigns a trainer from their service zone. Trainers see their sessions and run a server-timed session. An admin view shows bookings, assignment decisions and pricing rules. Payment goes through a simulated gateway (MockPay); no real money or real customer data is involved.
 
-Quick start: follow `api/README.md` to run the API on port 4000, then `client/README.md` for the web app on port 5173.
+## Live demo
 
-The full submission README (architecture, schema, cost and scaling notes, implemented vs proposed features) is still to be written.
+- Web app: `<WEB_URL>`
+- API: `<API_URL>` (health check: `<API_URL>/healthz`)
+- Repository: `<REPO_URL>`
+
+The API runs on Render's free tier and sleeps when idle. The first request after a pause can take about 30 to 60 seconds.
+
+## Demo accounts
+
+Password for every account: `Demo@12345`. All data is synthetic.
+
+| Role     | Email              | Notes                                                              |
+| -------- | ------------------ | ------------------------------------------------------------------ |
+| customer | `asha@zuryo.test`  | Lakeview Residency, 10-session package, profile and past sessions  |
+| customer | `ravi@zuryo.test`  | Lakeview Residency, no profile, no package (good for a fresh flow) |
+| customer | `meera@zuryo.test` | Palm Grove                                                         |
+| trainer  | `kiran@zuryo.test` | Lakeview Residency                                                 |
+| trainer  | `divya@zuryo.test` | Lakeview Residency                                                 |
+| trainer  | `arjun@zuryo.test` | Lakeview Residency                                                 |
+| trainer  | `sana@zuryo.test`  | Palm Grove                                                         |
+| admin    | `admin@zuryo.test` | Bookings, assignment decisions, pricing rules                      |
+
+## Stack
+
+| Layer    | Choice                                                           |
+| -------- | ---------------------------------------------------------------- |
+| Client   | Vite, React 19, TypeScript, TanStack Query, Zustand, Tailwind v4 |
+| API      | Node 24, Express 5, TypeScript, zod, hand-written SQL via `pg`   |
+| Database | PostgreSQL (Supabase), numbered `.sql` migrations                |
+| Hosting  | Render (API web service and static client), see `render.yaml`    |
+| AI       | OpenRouter chat call with a rules-based fallback                 |
+
+The reasons for each choice are in [docs/submission.md](docs/submission.md).
+
+## Repository layout
+
+```
+api/
+  migrations/      001_schema.sql, 002_rescheduled_from_index.sql
+  src/
+    routes/        method, path, middleware, schema
+    controllers/   read validated input, call one service
+    services/      business rules and transactions
+    queries/       SQL only
+    lib/           pure rules: pricing, assignment, session phase, recommendations
+    scripts/seed.ts
+  test/            vitest against a real Postgres
+  scripts/stress.ts
+client/src/        pages (customer, trainer, admin), api.ts, stores, lib
+docs/              api.md, architecture.md, submission.md, stress-results.md, correctness-review.md
+render.yaml        Render blueprint
+```
+
+## Run locally
+
+Needs Node 24 and a PostgreSQL 14+ database where the `btree_gist` extension is allowed.
+
+```bash
+# API (port 4000)
+cd api
+cp .env.example .env        # set DATABASE_URL and JWT_SECRET (32+ characters)
+npm install
+npm run migrate             # applies migrations once each
+npm run seed                # demo data; add "-- --reset" to wipe and reseed
+npm run dev
+
+# Client (port 5173), in a second terminal
+cd client
+cp .env.example .env        # VITE_API_URL=http://localhost:4000
+npm install
+npm run dev
+```
+
+| Command (in `api/`) | What it does                                                                                        |
+| ------------------- | --------------------------------------------------------------------------------------------------- |
+| `npm test`          | Starts a throwaway Postgres from `/usr/lib/postgresql/18/bin` (override with `PG_BIN`), runs vitest |
+| `npm run stress`    | Load test and invariant checks on its own throwaway database                                        |
+| `npm run typecheck` | Type-check                                                                                          |
+
+`npm test` in `client/` runs the small client suite (money formatting, dates, clock offset, timer phase). Latest API run recorded in `api/README.md`: 12 files, 112 tests, all passing.
+
+## Deploy
+
+`render.yaml` defines the API and the static client. Set `DATABASE_URL` (Supabase pooled string), `CORS_ORIGINS`, `PUBLIC_API_URL`, `CLIENT_URL` and `VITE_API_URL` in the Render dashboard. `JWT_SECRET` and `MOCKPAY_WEBHOOK_SECRET` are generated by Render. `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` are optional; without them recommendations use the rules engine. The start command runs `npm run migrate` before the server.
+
+## What is implemented
+
+| Area                                         | Status      | Notes                                                                                         |
+| -------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------- |
+| Login, roles, ownership checks               | Implemented | JWT, three roles                                                                              |
+| Instant and scheduled booking                | Implemented | Instant starts 15 minutes from now; scheduled uses a 30-minute grid, up to 14 days ahead      |
+| Slots, auto-assignment, preferred trainer    | Implemented | Zone, hours, time off, overlap; fewest sessions that day, then nearest, then id               |
+| No trainer available                         | Implemented | `409` with up to five alternative slots                                                       |
+| Double-booking protection                    | Implemented | Zone lock, app checks, exclusion constraints as backstop; see the stress note in architecture |
+| Pricing and checkout                         | Implemented | 399 / 499 plus 10 percent, rules in a table, admin can edit, server-side price                |
+| Simulated payment (MockPay + webhook)        | Implemented | HMAC over the raw body, amount check, idempotent                                              |
+| Session timer, 55-minute warning, completion | Implemented | Server owns start and end; client buzzer from server times                                    |
+| Packages and ledger                          | Implemented | 5, 10 or 20 sessions; purchased, used, remaining; refund on early cancel                      |
+| Cancel and reschedule                        | Implemented | Free until 2 hours before start                                                               |
+| Fitness profile, session records             | Implemented | Trainer record and customer feedback per session                                              |
+| AI workout recommendation                    | Implemented | LLM when configured, rules otherwise; the engine used is returned with the answer             |
+| In-app notifications                         | Partial     | Stored and polled; no push, email or SMS                                                      |
+| Ratings and feedback                         | Partial     | Customer rates a session; trainer card shows the average; no trainer-to-customer rating       |
+| Progress tracking                            | Partial     | Session history and package usage; no charts or repeated assessments                          |
+| Live trainer location and ETA                | Proposed    | Seeded coordinates and straight-line distance only                                            |
+| Push notifications and offers                | Proposed    |                                                                                               |
+| Surge pricing by demand and lead time        | Proposed    | Only fixed peak windows are built                                                             |
+| Nutrition chatbot, off-day workouts          | Proposed    |                                                                                               |
+| React Native client                          | Proposed    | Same API, new client                                                                          |
+
+## Docs
+
+- [docs/architecture.md](docs/architecture.md): components, data model, booking, payment, timer, security
+- [docs/submission.md](docs/submission.md): answers to the brief's section 6 and 7, cost and scale, assumptions, next steps
+- [docs/api.md](docs/api.md): endpoint reference
+- [docs/stress-results.md](docs/stress-results.md): load test results and invariants
+- [docs/correctness-review.md](docs/correctness-review.md): concurrency and money review
+- [api/README.md](api/README.md) and [client/README.md](client/README.md): per-part setup

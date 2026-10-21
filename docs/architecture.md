@@ -2,19 +2,7 @@
 
 ## Components
 
-```
-  Browser (React SPA, static files)
-     |  HTTPS, Bearer JWT, Idempotency-Key on writes
-     v
-  Express API (Node 24, one process)
-     |-- routes -> controllers -> services -> queries --> PostgreSQL (Supabase)
-     |-- sweep timer (every 30 s): complete due sessions, expire payment holds
-     |-- MockPay module (stand-in gateway, /mockpay)
-     |        |  signed webhook, HTTP back into the same API
-     |        v
-     |   POST /v1/payments/webhook  (raw body, HMAC check)
-     '-- OpenRouter (optional, server-side key) for workout recommendations
-```
+![How a booking moves through the system](architecture.svg)
 
 Everything is one deployable API plus static client files. State lives in Postgres only. The API keeps no in-memory state that matters, so a restart loses nothing.
 

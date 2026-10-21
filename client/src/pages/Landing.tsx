@@ -179,10 +179,10 @@ export default function Landing() {
             </ul>
 
             {DEMO_VIDEO_ID && (
-                <section className="pt-12 lg:pt-16">
+                <section className="mx-auto max-w-4xl pt-12 lg:pt-16">
                     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
                         <div>
-                            <h2 className="text-2xl font-extrabold tracking-heading">See it in five minutes.</h2>
+                            <h2 className="text-2xl font-extrabold tracking-heading">See it in four minutes.</h2>
                             <p className="mt-2 max-w-xl text-muted">
                                 A walkthrough of booking, paying, the trainer's session and the admin view.
                             </p>
@@ -196,7 +196,9 @@ export default function Landing() {
                             Watch on YouTube ↗
                         </a>
                     </div>
-                    <DemoVideo videoId={DEMO_VIDEO_ID} title="Zuryo walkthrough" />
+                    <div className="rounded-2xl border border-line bg-soft p-2 shadow-raised sm:p-3">
+                        <DemoVideo videoId={DEMO_VIDEO_ID} title="Zuryo walkthrough" />
+                    </div>
                 </section>
             )}
 

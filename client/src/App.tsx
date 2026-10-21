@@ -4,6 +4,7 @@ import { useAuth } from "./stores/auth";
 import { homeFor } from "./lib/routes";
 import type { Role } from "./types";
 import Login from "./pages/Login";
+import Landing from "./pages/Landing";
 import Home from "./pages/customer/Home";
 import Assessment from "./pages/customer/Assessment";
 import Book from "./pages/customer/Book";
@@ -29,13 +30,15 @@ function RequireRole({ role }: { role: Role }) {
 }
 
 export default function App() {
+    const user = useAuth((s) => s.user);
     return (
         <Routes>
+            {!user && <Route path="/" element={<Landing />} />}
             <Route path="/login" element={<Login />} />
             <Route path="/pay/:providerOrderId" element={<Pay />} />
             <Route element={<Layout />}>
                 <Route element={<RequireRole role="customer" />}>
-                    <Route path="/" element={<Home />} />
+                    {user && <Route path="/" element={<Home />} />}
                     <Route path="/profile" element={<Assessment />} />
                     <Route path="/book" element={<Book />} />
                     <Route path="/checkout" element={<Checkout />} />

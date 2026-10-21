@@ -28,7 +28,7 @@ export async function find(db: Db, providerOrderId: string) {
 export async function complete(db: Db, providerOrderId: string, outcome: "success" | "failure", paymentId: string) {
     const { rows } = await db.query(
         `UPDATE mockpay_orders SET outcome = $2, provider_payment_id = $3, completed_at = now()
-     WHERE provider_order_id = $1 AND outcome IS NULL RETURNING *`,
+            WHERE provider_order_id = $1 AND outcome IS NULL RETURNING *`,
         [providerOrderId, outcome, paymentId],
     );
     return (rows[0] as MockpayOrder | undefined) ?? null;

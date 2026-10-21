@@ -28,7 +28,7 @@ export async function insertOrder(
 ) {
     await db.query(
         `INSERT INTO payment_orders (purpose, booking_id, package_id, customer_id, amount_paise, provider_order_id)
-     VALUES ($1,$2,$3,$4,$5,$6)`,
+            VALUES ($1,$2,$3,$4,$5,$6)`,
         [o.purpose, o.bookingId, o.packageId, o.customerId, o.amountPaise, o.providerOrderId],
     );
 }
@@ -63,7 +63,7 @@ export async function lockPackage(db: Db, packageId: number) {
 export async function markPaid(db: Db, id: number, providerPaymentId: string, now: Date) {
     const { rowCount } = await db.query(
         `UPDATE payment_orders SET status = 'paid', provider_payment_id = $2, paid_at = $3
-     WHERE id = $1 AND status IN ('created', 'expired')`,
+            WHERE id = $1 AND status IN ('created', 'expired')`,
         [id, providerPaymentId, now],
     );
     return rowCount === 1;
@@ -81,7 +81,7 @@ export async function markFailed(db: Db, id: number) {
 export async function markRefundedAfterLatePayment(db: Db, id: number, providerPaymentId: string, now: Date) {
     const { rowCount } = await db.query(
         `UPDATE payment_orders SET status = 'refunded', provider_payment_id = $2, paid_at = $3
-     WHERE id = $1 AND status IN ('created', 'expired', 'failed')`,
+            WHERE id = $1 AND status IN ('created', 'expired', 'failed')`,
         [id, providerPaymentId, now],
     );
     return rowCount === 1;

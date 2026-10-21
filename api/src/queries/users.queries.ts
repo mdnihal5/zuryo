@@ -9,7 +9,7 @@ export async function findByEmail(db: Db, email: string) {
 export async function findAuthUser(db: Db, id: number) {
     const { rows } = await db.query(
         `SELECT u.id, u.name, u.role, u.token_version, t.id AS trainer_id
-     FROM users u LEFT JOIN trainers t ON t.user_id = u.id WHERE u.id = $1`,
+            FROM users u LEFT JOIN trainers t ON t.user_id = u.id WHERE u.id = $1`,
         [id],
     );
     return (

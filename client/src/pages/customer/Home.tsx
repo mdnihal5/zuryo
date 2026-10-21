@@ -188,7 +188,7 @@ export default function Home() {
                 </div>
             </section>
 
-            <div className="mx-auto max-w-3xl">
+            <div className="max-w-3xl">
                 <Notifications />
             </div>
 

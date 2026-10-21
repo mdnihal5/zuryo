@@ -117,6 +117,51 @@ describe("session timer", () => {
         expect((await pool.query("SELECT status FROM bookings WHERE id = $1", [id])).rows[0].status).toBe("completed");
     });
 
+    describe("55-minute warning", () => {
+        const warnings = (id: number) =>
+            count("SELECT count(*) n FROM notifications WHERE booking_id = $1 AND kind = 'session_warning'", [id]);
+        const setStart = (id: number, ago: string) =>
+            pool.query(
+                `UPDATE bookings SET started_at = now() - interval '${ago}', session_ends_at = now() - interval '${ago}' + interval '60 minutes' WHERE id = $1`,
+                [id],
+            );
+
+        it("is not written before 55 minutes", async () => {
+            const { trainerToken, id } = await setup();
+            await api.post(`/v1/trainer/sessions/${id}/start`).set(bearer(trainerToken));
+            await setStart(id, "54 minutes 50 seconds");
+            await completeDueSessions();
+            expect(await warnings(id)).toBe(0);
+        });
+
+        it("is written once for the trainer and once for the customer, however often it is checked", async () => {
+            const { trainer, customer, trainerToken, customerToken, id } = await setup();
+            await api.post(`/v1/trainer/sessions/${id}/start`).set(bearer(trainerToken));
+            await setStart(id, "55 minutes 5 seconds");
+            await Promise.all([
+                view(customerToken, id, "bookings"),
+                view(trainerToken, id, "trainer/sessions"),
+                completeDueSessions(),
+                completeDueSessions(),
+            ]);
+            await completeDueSessions();
+            expect(await warnings(id)).toBe(2);
+            const who = await pool.query(
+                "SELECT user_id FROM notifications WHERE booking_id = $1 AND kind = 'session_warning' ORDER BY user_id",
+                [id],
+            );
+            expect(who.rows.map((r) => r.user_id)).toEqual([trainer.id, customer.id].sort((a, b) => a - b));
+        });
+
+        it("is not written for a session that already ended", async () => {
+            const { trainerToken, id } = await setup();
+            await api.post(`/v1/trainer/sessions/${id}/start`).set(bearer(trainerToken));
+            await setStart(id, "61 minutes");
+            await completeDueSessions();
+            expect(await warnings(id)).toBe(0);
+        });
+    });
+
     it("cannot start more than 30 minutes early, or someone else's session", async () => {
         const zone = await makeZone();
         const trainer = await makeTrainer(zone);

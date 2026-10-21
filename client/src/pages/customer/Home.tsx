@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { api, ApiError } from "../../api";
+import { Notifications } from "../../components/Notifications";
 import { Avatar, Chip, ErrorState, Loading, buttonClass } from "../../components/ui";
 import { formatDayTime } from "../../lib/format";
 import { useBookings, usePackages, useProfile, useRecommendation } from "../../queries";
@@ -186,6 +187,10 @@ export default function Home() {
                     <Recommended />
                 </div>
             </section>
+
+            <div className="mx-auto max-w-3xl">
+                <Notifications />
+            </div>
 
             <section>
                 <h2 className="text-2xl font-extrabold tracking-display">Trainers near you</h2>

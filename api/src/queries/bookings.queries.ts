@@ -194,6 +194,22 @@ export async function completeDue(db: Db, now: Date, message: string) {
     return rows.map((r) => r.id as number);
 }
 
+// Warns both people once a running session passes the warning mark. The partial unique index on notifications makes
+// racing callers write it once; only rows actually inserted come back.
+export async function warnDue(db: Db, now: Date, warningMinutes: number, message: string) {
+    const { rows } = await db.query(
+        `INSERT INTO notifications (user_id, kind, booking_id, message)
+     SELECT u.user_id, 'session_warning', b.id, $3
+     FROM bookings b
+     CROSS JOIN LATERAL (VALUES (b.customer_id), ((SELECT user_id FROM trainers WHERE id = b.trainer_id))) AS u(user_id)
+     WHERE b.status = 'in_progress' AND b.started_at + make_interval(mins => $2) <= $1 AND b.session_ends_at > $1
+     ON CONFLICT (user_id, booking_id) WHERE kind = 'session_warning' DO NOTHING
+     RETURNING booking_id`,
+        [now, warningMinutes, message],
+    );
+    return rows.map((r) => r.booking_id as number);
+}
+
 // A hold that ran out frees its slot: the booking and its order both become 'expired' in one statement.
 // Conditional on status, so a webhook confirming the booking at the same moment simply wins (the row is locked,
 // then no longer matches). Safe to call from any read, from many requests, and from the sweep.

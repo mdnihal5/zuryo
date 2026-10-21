@@ -1,10 +1,11 @@
 import { Link } from "react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "../../api";
+import { Notifications } from "../../components/Notifications";
 import { Chip, Empty, PageHeader, QueryState, SectionTitle, buttonClass } from "../../components/ui";
-import { formatDay, formatDayTime, formatTime, istDate } from "../../lib/format";
+import { formatDay, formatTime, istDate } from "../../lib/format";
 import { serverTime } from "../../lib/clock";
-import { POLL_MS, useNotifications } from "../../queries";
+import { POLL_MS } from "../../queries";
 import type { Booking, Page } from "../../types";
 
 function statusChip(b: Booking) {
@@ -59,45 +60,6 @@ function SessionList({ items }: { items: Booking[] }) {
                 </li>
             ))}
         </ul>
-    );
-}
-
-function Notifications() {
-    const notes = useNotifications();
-    const queryClient = useQueryClient();
-    const markRead = useMutation({
-        mutationFn: () => api("/notifications/read", { method: "POST" }),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
-    });
-    const unread = notes.data?.filter((n) => !n.readAt).length ?? 0;
-    return (
-        <section>
-            <SectionTitle
-                aside={
-                    unread > 0 && (
-                        <button onClick={() => markRead.mutate()} className="text-sm font-bold text-accent-ink">
-                            Mark all read
-                        </button>
-                    )
-                }
-            >
-                Notifications {unread > 0 && <Chip tone="accent">{unread} new</Chip>}
-            </SectionTitle>
-            <QueryState
-                query={notes}
-                isEmpty={notes.data?.length === 0}
-                empty={<Empty title="Nothing yet" hint="Assignments, cancellations and reschedules appear here." />}
-            >
-                <ul>
-                    {notes.data?.slice(0, 15).map((n) => (
-                        <li key={n.id} className="border-b border-line py-3">
-                            <p className={n.readAt ? "text-muted" : "font-semibold"}>{n.message}</p>
-                            <p className="text-xs text-muted">{formatDayTime(n.createdAt)}</p>
-                        </li>
-                    ))}
-                </ul>
-            </QueryState>
-        </section>
     );
 }
 

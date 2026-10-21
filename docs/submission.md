@@ -4,13 +4,13 @@ Answers follow the numbering of the brief. Details and code pointers are in [arc
 
 ## Section 6: architecture and engineering decisions
 
-**1. Stack.** React, Vite and TypeScript for the client; Express 5 and TypeScript for the API; PostgreSQL on Supabase; Render for hosting.
+**1. Stack.** React, Vite and TypeScript for the client; Express 5 and TypeScript for the API; PostgreSQL on Supabase; the API on Render and the client on Vercel.
 
 - The brief allows a responsive web app, so one client serves all three roles. React Native is the later evolution (below).
 - Postgres because the core rules are database rules: no overlapping bookings, one ledger row per booking, unique payment ids. Those are exclusion and unique constraints, which a document store would make me rebuild in application code.
 - Raw SQL with `pg` and numbered migrations instead of an ORM. The parts that matter (exclusion constraint, advisory lock, conditional updates) are SQL anyway.
 - TanStack Query owns server data (polling, refetch after writes). Zustand holds the two client-only values: the token and the checkout draft with its idempotency key. A Redux store would manage almost nothing.
-- Render free and Supabase free cost nothing, which the brief requires.
+- Render free, Vercel hobby and Supabase free cost nothing, which the brief requires.
 
 **2. Data model and key APIs.** Tables and constraints are in architecture.md. Key endpoints: `POST /auth/login`, `GET /slots`, `GET /quote`, `POST /bookings`, `POST /bookings/:id/cancel`, `POST /bookings/:id/reschedule`, `POST /packages`, `GET/PUT /profile`, `GET /recommendations/next-workout`, `POST /trainer/sessions/:id/start`, `PUT /trainer/sessions/:id/record`, `PUT /trainer/availability/hours`, `GET/PUT /admin/pricing-rules`, `POST /payments/webhook`.
 
@@ -24,13 +24,13 @@ Answers follow the numbering of the brief. Details and code pointers are in [arc
 
 The stress finding (a GiST index entry missing in some runs, cause unconfirmed) and the change it led to are in architecture.md. Honest status: the guarantee is "app check under lock, constraint as backstop", not "the constraint alone".
 
-**5. Timers, reminders, status.** The server stores `started_at` and `session_ends_at`. Phase and completion are derived from those times on every read, so correctness does not depend on a worker running. A 30-second sweep makes the completion notification timely. Refresh and reopen just re-read the booking; device clock error is removed with a `serverNow` offset. Delayed notifications cannot change state because state is derived, not pushed. The 55-minute warning sounds from the client timer while the page is open; closed-app reminders need push (item 7).
+**5. Timers, reminders, status.** The server stores `started_at` and `session_ends_at`. Phase and completion are derived from those times on every read, so correctness does not depend on a worker running. A 30-second sweep makes the completion notification timely. Refresh and reopen just re-read the booking; device clock error is removed with a `serverNow` offset. Delayed notifications cannot change state because state is derived, not pushed. At 55 minutes the server writes a `session_warning` notification for the trainer and the customer (once per person, enforced by a unique index), and the open timer also sounds a buzzer. A closed app sees the notification on its next poll; real-time reminders to a closed app need push (item 7).
 
 **6. Pricing, commission, package balance.** Price is computed on the server from the `pricing_rules` row, in integer paise with round-half-up commission, and snapshotted on the booking. The client never sends an amount; the webhook amount is compared with the stored order. Package balance is `sessions_total + SUM(ledger.delta)`, not a counter. `UNIQUE (booking_id, reason)` makes a second deduction impossible, even on a retry or two tabs. Cancelled sessions: cancel at least 2 hours before start adds a `+1` refund row (or refunds the payment); later cancels return nothing. Credit is taken at booking, otherwise someone with 8 credits could book 12 sessions.
 
 **7. Notifications, GPS, live ETA in production.**
 
-- Built: notification rows for assigned, cancelled, rescheduled, completed and payment events, polled every 30 s.
+- Built: notification rows for assigned, cancelled, rescheduled, 55-minute warning, completed and payment events, shown to both trainer and customer and polled every 30 s.
 - Production notifications: write the notification and an outbox row in the same transaction; a worker sends through FCM and APNs (and SMS for reminders), retries, and drops dead tokens. Reminders (for example 1 hour before) are rows in a scheduled-jobs table processed by the worker.
 - Location: the trainer app sends its position every 5 to 10 seconds while a session is within, say, 45 minutes. The API validates and keeps only the latest point per trainer (a small table or Redis), not a full trail.
 - ETA: ask a routing API (Google Distance Matrix, or self-hosted OSRM) from the trainer's last point to the customer, no more than once per 30 seconds per booking, and push the result to the customer over SSE or WebSocket. Straight-line distance times a speed factor is the fallback when the routing call fails.
@@ -51,9 +51,10 @@ The stress finding (a GiST index entry missing in some runs, cause unconfirmed) 
 - **Cancelled sessions and refunds on package balance.** Item 6 above.
 - **AI feature.** `GET /recommendations/next-workout` builds a plan from the profile and the last five session records.
     - Rules baseline: goals map to body areas, the two areas trained least recently are chosen, sets and intensity follow the level, low-impact variants for age 50+ or a stated preference. Same input gives the same output.
+    - Model: `dots-studio/dots-3-note-preview:free` through OpenRouter, chosen because it is free and returns JSON. It is a reasoning model, and with reasoning on it spent the whole 700-token budget thinking and returned empty content (the app then quietly used the rules). The request sends `reasoning: { enabled: false }`, so the answer comes back directly. Any OpenRouter model works by changing `OPENROUTER_MODEL`; free preview models can disappear, which is one more reason the rules fallback exists.
     - LLM path: when `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` are set, the server calls that model first (temperature 0.3, JSON response, 700 max tokens, 8 s timeout). The output is validated with zod; any failure falls back to the rules. The response says which `engine` produced it.
     - Prompt: a system message limiting the answer to general fitness with no medical advice, and a JSON user message with age, weight, goals, level, preferences and recent exercises. Credentials stay on the server.
-    - Cost and latency: not measured, no model has been called in testing beyond a stubbed provider in the tests. A call is roughly 600 input and 350 output tokens, so cost is about `0.0006 x input price + 0.00035 x output price` per 1k-token prices of the chosen model. That is a fraction of a cent for small models (approximate, check current pricing). The timeout bounds worst-case latency at 8 s.
+    - Cost and latency, measured on 2026-10-21 with 5 calls of a realistic payload (profile plus five sessions): about 444 input and 210 to 290 output tokens, 3.9 to 5.6 s end to end (median 4.7 s). The demo model is free on OpenRouter, so the cost is 0. On a paid small model the cost per call is `444 x input price + 260 x output price`; at an assumed 0.15 USD per million input and 0.60 USD per million output tokens that is about 0.0002 USD, so 10,000 recommendations cost about 2 USD. The 8 s timeout bounds the worst case, after which the rules answer instantly.
     - Limits: general suggestions, no injury or medical awareness, sees only five sessions, the rules library has five areas and six known goals.
 - **Evolving to React Native.** The API is already client-agnostic: bearer tokens, no cookies, JSON only, `serverNow` on every response. A new Expo client reuses the endpoints and the types. The client's `api.ts`, query hooks and clock-offset logic carry over; screens are rewritten. Needed additions: push tokens endpoint, secure token storage, background location for trainers.
 
@@ -90,7 +91,7 @@ Prices below are approximate; check the vendors' current pricing pages before re
 
 | Setup                                                            | Monthly cost (approximate) | Limits                                                                      |
 | ---------------------------------------------------------------- | -------------------------- | --------------------------------------------------------------------------- |
-| This demo: Render free + Supabase free                           | 0                          | API sleeps when idle (slow first request); small database; no SSE/WebSocket |
+| This demo: Render free + Vercel hobby + Supabase free            | 0                          | API sleeps when idle (slow first request); small database; no SSE/WebSocket |
 | Pilot: always-on Render instance + Supabase paid                 | about 30 to 40 USD         | No cold starts, backups, more connections                                   |
 | Growth: 2 API instances, pooler, one read replica, push provider | a few hundred USD          | Depends on traffic and routing API volume                                   |
 
@@ -126,16 +127,18 @@ The measured numbers are in stress-results.md. They come from one laptop running
 - A confirmed session that is never started stays `confirmed` (no no-show state). Trainers cannot cancel or reschedule a booking.
 - Packages bought online are not refunded on a failed payment because they never activate. No package expiry.
 - No overnight trainer shifts; changing hours does not move existing bookings.
-- Test run and stress run were done on local Postgres, not on Supabase; the stress finding above is unresolved.
+- Tests and the stress run were done on local Postgres, not on Supabase; the stress finding above is unresolved.
+- Trainers cannot end a session early or mark a no-show: the server ends every session at 60 minutes. Ending early is a product rule (refund or partial credit?) that the brief does not settle.
+- Landing-page prices are fixed in the page (the API has no public pricing endpoint); checkout always uses the live server price.
 - Not built: push, email, SMS, live location, surge pricing, chatbot, trainer ratings of customers, charts.
 
 ## Tests
 
-`cd api && npm test` starts a throwaway Postgres, migrates, seeds and runs vitest against real HTTP. The last recorded run (in `api/README.md`) was 12 files, 112 tests, all passing; I did not re-run it while writing this document. It covers 20 parallel bookings for one slot, idempotent retries, webhook signature, tampered amount and duplicate webhooks, hold expiry, package balance under parallel bookings, price examples (438.90, 548.90), cancel and refund timing, session phase at 55 and 60 minutes, assignment order, role checks and the LLM fallback. `cd client && npm test` runs the client unit tests.
+`cd api && npm test` starts a throwaway Postgres, migrates, seeds and runs vitest against real HTTP. Run on 2026-10-21: 12 files, 115 tests, all passing; the client suite has 14 tests, all passing. It covers 20 parallel bookings for one slot, idempotent retries, webhook signature, tampered amount and duplicate webhooks, hold expiry, package balance under parallel bookings, price examples (438.90, 548.90), cancel and refund timing, session phase at 55 and 60 minutes, the 55-minute warning written once per person, assignment order, role checks and the LLM fallback. `cd client && npm test` runs the client unit tests.
 
 ## What I would build next, and why
 
-1. Deploy against Supabase and run the stress test there, because the open index finding is the biggest unanswered correctness question.
+1. Run the stress test against the deployed Supabase database, because the open index finding is the biggest unanswered correctness question.
 2. A real gateway sandbox (Cashfree or Razorpay) behind the same webhook, since the money path is the part users trust most.
 3. Push notifications through an outbox, because a timer that only sounds in an open tab is the weakest part of the session experience.
 4. Trainer cancellation and a no-show state, which operations will hit in week one.

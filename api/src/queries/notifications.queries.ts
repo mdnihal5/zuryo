@@ -7,6 +7,7 @@ export type NewNotification = {
         | "booking_cancelled"
         | "booking_rescheduled"
         | "session_completed"
+        | "session_warning"
         | "payment_failed"
         | "payment_refunded";
     bookingId: number;

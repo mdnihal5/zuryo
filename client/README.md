@@ -44,11 +44,10 @@ npm test            # vitest: money formatting, Kolkata dates, clock offset, tim
 
 ## Deploy as a static site
 
-`npm run build` produces `dist/`, plain files. Host it on any static host (Render static site, Netlify, Vercel, Cloudflare Pages).
+The live client runs on Vercel: root directory `client`, Vite preset (build `npm run build`, output `dist`), Node 24.
 
-- Build command: `npm ci && npm run build`. Publish directory: `dist`.
-- Set `VITE_API_URL` to the deployed API origin before building.
-- Single-page app: add a rewrite of every path to `/index.html` (Render: rewrite `/*` to `/index.html`), otherwise a refresh on `/bookings` is a 404.
+- Set `VITE_API_URL` to the deployed API origin. Vite reads it at build time, so a change needs a redeploy.
+- Single-page app: `vercel.json` rewrites every path to `/index.html`, otherwise a refresh on `/bookings` is a 404. Other static hosts need the same rewrite.
 - Add the site's origin to the API's `CORS_ORIGINS`.
 
 ## Where things are

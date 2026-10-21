@@ -51,7 +51,7 @@ Every seeded account uses the password **`Demo@12345`** (synthetic data only).
 npm test
 ```
 
-Starts a throwaway Postgres 18 from `/usr/lib/postgresql/18/bin` in `.tmp/` on port 55432 (override with `PG_BIN`, `TEST_PG_PORT`), migrates, seeds, runs vitest, then stops it and deletes `.tmp/`. It ignores `DATABASE_URL` and `.env`, so it cannot touch a real database. Latest run: 12 files, 112 tests, all passing, about 25 s.
+Starts a throwaway Postgres 18 from `/usr/lib/postgresql/18/bin` in `.tmp/` on port 55432 (override with `PG_BIN`, `TEST_PG_PORT`), migrates, seeds, runs vitest, then stops it and deletes `.tmp/`. It ignores `DATABASE_URL` and `.env`, so it cannot touch a real database. Latest run (2026-10-21): 12 files, 115 tests, all passing, about 25 s.
 
 What is covered (real Postgres, real HTTP via supertest): 20 parallel bookings for one trainer and slot give exactly one success; losers fall through to the next trainer; idempotent retries (sequential and parallel) create and charge once; payments through the stand-in gateway (signature, tampered amount, five simultaneous identical webhooks, hold expiry, late success with the slot free or taken, failure, refund once, package activation only on the paid webhook); a package can never be deducted twice or go negative under parallel bookings; pricing (438.90, 548.90, peak boundaries, client-sent amounts ignored, rule changes do not touch old bookings); cancellation and refunds before and after the 2 h deadline, exactly once even with parallel cancels; reschedule is atomic and idempotent; session phase at 55 and 60 minutes and idempotent completion; trainer ranking and preferred trainer; role and ownership checks; the LLM path with a stubbed provider, including fallback to rules.
 
@@ -93,7 +93,8 @@ Where each rule lives:
 
 - **Rules engine (always available, `engine: "rules"`):** maps the customer's goals to body areas, picks the two least recently trained, scales sets and intensity by level, uses low-impact variants for age 50+ or a "low impact" preference. Deterministic.
 - **LLM path (optional, `engine: "llm"`):** when `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` are set, the server asks that model first. The call is server-side only, has a timeout (`LLM_TIMEOUT_MS`), and the JSON answer is validated with zod; any failure (network, HTTP error, timeout, malformed answer) falls back to the rules. The prompt is a short system instruction plus a JSON payload of age, weight, goals, level, preferences and the last sessions' dates, durations and exercises. No name, email, id or free-text note is sent.
-- **Cost and latency:** not measured, no model has been called. A request is roughly 600 input and 350 output tokens, so cost per call is about `0.0006 x input price + 0.00035 x output price` (prices per 1k tokens of the chosen model). Latency depends on the model; the 8 s timeout bounds the worst case.
+- **Model:** `dots-studio/dots-3-note-preview:free`, a reasoning model. The request sets `reasoning: { enabled: false }`; with reasoning on it used the whole 700-token budget thinking and returned empty content.
+- **Cost and latency (measured 2026-10-21, 5 calls):** about 444 input and 210 to 290 output tokens, 3.9 to 5.6 s. The model is free, so cost is 0; on a paid model it is `444 x input price + 260 x output price` per call. The 8 s timeout bounds the worst case.
 - **Limitations:** general fitness suggestions, not medical advice; the model sees only the last 5 sessions; the rules engine knows a small exercise library and six goals.
 
 ## Known limits

@@ -32,7 +32,7 @@ Password for every account: `Demo@12345`. All data is synthetic.
 | Client   | Vite, React 19, TypeScript, TanStack Query, Zustand, Tailwind v4 |
 | API      | Node 24, Express 5, TypeScript, zod, hand-written SQL via `pg`   |
 | Database | PostgreSQL (Supabase), numbered `.sql` migrations                |
-| Hosting  | Render (API web service and static client), see `render.yaml`    |
+| Hosting  | API on Render (`render.yaml`), client on Vercel                  |
 | AI       | OpenRouter chat call with a rules-based fallback                 |
 
 The reasons for each choice are in [docs/submission.md](docs/submission.md).
@@ -41,7 +41,7 @@ The reasons for each choice are in [docs/submission.md](docs/submission.md).
 
 ```
 api/
-  migrations/      001_schema.sql, 002_rescheduled_from_index.sql
+  migrations/      001_schema.sql, 002_rescheduled_from_index.sql, 003_session_warning.sql
   src/
     routes/        method, path, middleware, schema
     controllers/   read validated input, call one service
@@ -53,7 +53,7 @@ api/
   scripts/stress.ts
 client/src/        pages (customer, trainer, admin), api.ts, stores, lib
 docs/              api.md, architecture.md, submission.md, stress-results.md, correctness-review.md
-render.yaml        Render blueprint
+render.yaml        Render blueprint for the API
 ```
 
 ## Run locally
@@ -82,7 +82,7 @@ npm run dev
 | `npm run stress`    | Load test and invariant checks on its own throwaway database                                        |
 | `npm run typecheck` | Type-check                                                                                          |
 
-`npm test` in `client/` runs the small client suite (money formatting, dates, clock offset, timer phase). Latest API run recorded in `api/README.md`: 12 files, 112 tests, all passing.
+`npm test` in `client/` runs the small client suite (money formatting, dates, clock offset, timer phase). Latest API run (2026-10-21): 12 files, 115 tests, all passing; client: 3 files, 14 tests, all passing.
 
 ## Deploy
 
@@ -92,28 +92,30 @@ The client runs on Vercel with root directory `client` and the Vite preset. Its 
 
 ## What is implemented
 
-| Area                                         | Status      | Notes                                                                                         |
-| -------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------- |
-| Login, roles, ownership checks               | Implemented | JWT, three roles                                                                              |
-| Instant and scheduled booking                | Implemented | Instant starts 15 minutes from now; scheduled uses a 30-minute grid, up to 14 days ahead      |
-| Slots, auto-assignment, preferred trainer    | Implemented | Zone, hours, time off, overlap; fewest sessions that day, then nearest, then id               |
-| No trainer available                         | Implemented | `409` with up to five alternative slots                                                       |
-| Double-booking protection                    | Implemented | Zone lock, app checks, exclusion constraints as backstop; see the stress note in architecture |
-| Pricing and checkout                         | Implemented | 399 / 499 plus 10 percent, rules in a table, admin can edit, server-side price                |
-| Simulated payment (MockPay + webhook)        | Implemented | HMAC over the raw body, amount check, idempotent                                              |
-| Session timer, 55-minute warning, completion | Implemented | Server owns start and end; client buzzer from server times                                    |
-| Packages and ledger                          | Implemented | 5, 10 or 20 sessions; purchased, used, remaining; refund on early cancel                      |
-| Cancel and reschedule                        | Implemented | Free until 2 hours before start                                                               |
-| Fitness profile, session records             | Implemented | Trainer record and customer feedback per session                                              |
-| AI workout recommendation                    | Implemented | LLM when configured, rules otherwise; the engine used is returned with the answer             |
-| In-app notifications                         | Partial     | Stored and polled; no push, email or SMS                                                      |
-| Ratings and feedback                         | Partial     | Customer rates a session; trainer card shows the average; no trainer-to-customer rating       |
-| Progress tracking                            | Partial     | Session history and package usage; no charts or repeated assessments                          |
-| Live trainer location and ETA                | Proposed    | Seeded coordinates and straight-line distance only                                            |
-| Push notifications and offers                | Proposed    |                                                                                               |
-| Surge pricing by demand and lead time        | Proposed    | Only fixed peak windows are built                                                             |
-| Nutrition chatbot, off-day workouts          | Proposed    |                                                                                               |
-| React Native client                          | Proposed    | Same API, new client                                                                          |
+| Area                                         | Status      | Notes                                                                                            |
+| -------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------ |
+| Public landing page                          | Implemented | Product, price breakdown, one-click demo sign-in per role                                        |
+| Login, roles, ownership checks               | Implemented | JWT, three roles                                                                                 |
+| Instant and scheduled booking                | Implemented | Instant starts 15 minutes from now; scheduled uses a 30-minute grid, up to 14 days ahead         |
+| Slots, auto-assignment, preferred trainer    | Implemented | Zone, hours, time off, overlap; fewest sessions that day, then nearest, then id                  |
+| No trainer available                         | Implemented | `409` with up to five alternative slots                                                          |
+| Double-booking protection                    | Implemented | Zone lock, app checks, exclusion constraints as backstop; see the stress note in architecture    |
+| Pricing and checkout                         | Implemented | 399 / 499 plus 10 percent, rules in a table, admin can edit, server-side price                   |
+| Simulated payment (MockPay + webhook)        | Implemented | HMAC over the raw body, amount check, idempotent                                                 |
+| Session timer, 55-minute warning, completion | Implemented | Server owns start and end; client buzzer from server times                                       |
+| Packages and ledger                          | Implemented | 5, 10 or 20 sessions; purchased, used, remaining; refund on early cancel                         |
+| Cancel and reschedule                        | Implemented | Free until 2 hours before start                                                                  |
+| Fitness profile, session records             | Implemented | Trainer record and customer feedback per session                                                 |
+| AI workout recommendation                    | Implemented | LLM when configured, rules otherwise; the engine used is returned with the answer                |
+| In-app notifications                         | Partial     | Trainer and customer lists, including the 55-minute warning; polled, no push, email or SMS       |
+| Trainer session controls                     | Partial     | Start only; the server ends every session at 60 minutes; no early end, no-show or trainer cancel |
+| Ratings and feedback                         | Partial     | Customer rates a session; trainer card shows the average; no trainer-to-customer rating          |
+| Progress tracking                            | Partial     | Session history and package usage; no charts or repeated assessments                             |
+| Live trainer location and ETA                | Proposed    | Seeded coordinates and straight-line distance only                                               |
+| Push notifications and offers                | Proposed    |                                                                                                  |
+| Surge pricing by demand and lead time        | Proposed    | Only fixed peak windows are built                                                                |
+| Nutrition chatbot, off-day workouts          | Proposed    |                                                                                                  |
+| React Native client                          | Proposed    | Same API, new client                                                                             |
 
 ## Docs
 

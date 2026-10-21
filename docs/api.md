@@ -69,10 +69,10 @@ Errors: `401 INVALID_CREDENTIALS` (same message for a wrong password and an unkn
 
 ## Notifications (any role, own only)
 
-| Method | Path                  | Response                                                                                                                                                                                               |
-| ------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| GET    | `/notifications`      | newest 50: `[{ id, kind, bookingId, message, createdAt, readAt }]`. `kind`: `booking_assigned`, `booking_cancelled`, `booking_rescheduled`, `session_completed`, `payment_failed`, `payment_refunded`. |
-| POST   | `/notifications/read` | marks all read: `{ ok: true }`                                                                                                                                                                         |
+| Method | Path                  | Response                                                                                                                                                                                                                  |
+| ------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/notifications`      | newest 50: `[{ id, kind, bookingId, message, createdAt, readAt }]`. `kind`: `booking_assigned`, `booking_cancelled`, `booking_rescheduled`, `session_warning`, `session_completed`, `payment_failed`, `payment_refunded`. |
+| POST   | `/notifications/read` | marks all read: `{ ok: true }`                                                                                                                                                                                            |
 
 Poll this (and the booking endpoints) every ~30 s to keep views in sync.
 

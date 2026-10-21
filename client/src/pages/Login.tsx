@@ -1,27 +1,12 @@
 import { useState, type FormEvent } from "react";
-import { Navigate, useNavigate } from "react-router";
-import { useMutation } from "@tanstack/react-query";
+import { Navigate } from "react-router";
 import { z } from "zod";
-import { api, errorMessage } from "../api";
+import { errorMessage } from "../api";
 import { homeFor } from "../lib/routes";
+import { DEMO_PASSWORD, demoAccounts, useLogin } from "../lib/useLogin";
 import { Logo } from "../components/Layout";
 import { Avatar, Field, buttonClass, inputClass } from "../components/ui";
 import { useAuth } from "../stores/auth";
-import type { Role, User } from "../types";
-
-const PASSWORD = "Demo@12345";
-
-const accounts: { name: string; email: string; role: Role; note: string }[] = [
-    { name: "Asha Rao", email: "asha@zuryo.test", role: "customer", note: "Has a package, a profile and history" },
-    { name: "Ravi Menon", email: "ravi@zuryo.test", role: "customer", note: "New customer, no profile or package" },
-    { name: "Kiran Patel", email: "kiran@zuryo.test", role: "trainer", note: "Works every day, 6 AM to 9 PM" },
-    {
-        name: "Operations Admin",
-        email: "admin@zuryo.test",
-        role: "admin",
-        note: "Bookings, assignment decisions, pricing",
-    },
-];
 
 const schema = z.object({
     email: z.email("Enter a valid email"),
@@ -30,20 +15,11 @@ const schema = z.object({
 
 export default function Login() {
     const user = useAuth((s) => s.user);
-    const signIn = useAuth((s) => s.signIn);
-    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
 
-    const login = useMutation({
-        mutationFn: (body: { email: string; password: string }) =>
-            api<{ token: string; user: User }>("/auth/login", { method: "POST", body }),
-        onSuccess: (data) => {
-            signIn(data.token, data.user);
-            navigate(homeFor[data.user.role]);
-        },
-    });
+    const login = useLogin();
 
     if (user) return <Navigate to={homeFor[user.role]} replace />;
 
@@ -67,10 +43,10 @@ export default function Login() {
                     <p className="mb-2 text-sm font-bold text-accent">Demo access</p>
                     <h1 className="text-2xl font-extrabold tracking-display lg:text-3xl">Sign in to Zuryo</h1>
                     <p className="mt-2 text-md text-muted">
-                        Pick a demo account, or type credentials. Every demo account uses the password {PASSWORD}.
+                        Pick a demo account, or type credentials. Every demo account uses the password {DEMO_PASSWORD}.
                     </p>
                     <ul className="mt-6 divide-y divide-line border-y border-line">
-                        {accounts.map((a) => (
+                        {demoAccounts.map((a) => (
                             <li key={a.email} className="flex items-center gap-3 py-3">
                                 <Avatar name={a.name} />
                                 <div className="min-w-0 flex-1">
@@ -84,7 +60,7 @@ export default function Login() {
                                 <button
                                     className={buttonClass("soft", "sm")}
                                     disabled={login.isPending}
-                                    onClick={() => login.mutate({ email: a.email, password: PASSWORD })}
+                                    onClick={() => login.mutate({ email: a.email, password: DEMO_PASSWORD })}
                                 >
                                     Use
                                 </button>

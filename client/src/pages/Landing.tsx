@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { errorMessage } from "../api";
+import { DemoVideo } from "../components/DemoVideo";
 import { Logo } from "../components/Layout";
 import { Avatar, buttonClass } from "../components/ui";
 import { formatPaise } from "../lib/format";
@@ -35,6 +36,9 @@ const facts = [
     { value: "5, 10, 20", label: "session packages" },
     { value: "Refunds", label: "to how you paid, 2 h+ ahead" },
 ];
+
+// YouTube id of the unlisted walkthrough; the section is hidden while it is empty.
+const DEMO_VIDEO_ID = "";
 
 const demoRoles = [
     { email: "asha@zuryo.test", label: "Customer", hint: "Book and pay" },
@@ -173,6 +177,16 @@ export default function Landing() {
                     </li>
                 ))}
             </ul>
+
+            {DEMO_VIDEO_ID && (
+                <section className="pt-12 lg:pt-16">
+                    <h2 className="text-2xl font-extrabold tracking-heading">See it in five minutes.</h2>
+                    <p className="mt-2 mb-6 max-w-xl text-muted">
+                        A walkthrough of booking, paying, the trainer's session and the admin view.
+                    </p>
+                    <DemoVideo videoId={DEMO_VIDEO_ID} title="Zuryo walkthrough" />
+                </section>
+            )}
 
             <section
                 id="demo"

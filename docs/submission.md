@@ -1,6 +1,6 @@
 # Submission
 
-Answers follow the numbering of the brief. Details and code pointers are in [architecture.md](architecture.md); endpoint reference in [api.md](api.md). Implemented, partial and proposed features are listed in the [README](../README.md).
+Answers follow the numbering of the brief. Details and code pointers are in [architecture.md](architecture.md); endpoint reference in [api.md](api.md). Implemented, partial and proposed features are listed in the [README](../README.md). A 5-minute walkthrough video: https://youtu.be/Z7haQ4hFmts.
 
 ## Section 6: architecture and engineering decisions
 

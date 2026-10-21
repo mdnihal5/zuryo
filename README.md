@@ -7,6 +7,7 @@ Zuryo is a working MVP of on-demand fitness booking for residential communities.
 - Web app: https://zuryo-web.vercel.app
 - API: https://zuryo.onrender.com (health check: https://zuryo.onrender.com/healthz)
 - Repository: https://github.com/mdnihal5/zuryo
+- Walkthrough video (5 min): https://youtu.be/Z7haQ4hFmts
 
 The API runs on Render's free tier and sleeps when idle. The first request after a pause can take about 30 to 60 seconds.
 

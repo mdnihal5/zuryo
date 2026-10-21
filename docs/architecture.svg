@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 900" width="1280" height="900">
+<rect width="1280" height="900" fill="#fdfcf9"/>
+<text xml:space="preserve" x="40" y="52" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#1e1e1e" text-anchor="start">Zuryo: how a booking moves through the system</text>
+<text xml:space="preserve" x="40" y="78" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14.5" font-weight="400" fill="#5c5c5c" text-anchor="start">One API process, one Postgres. Numbers follow a pay-now booking from tap to confirmed.</text>
+<rect x="40" y="120" width="250" height="300" rx="10" fill="#a5d8ff"/>
+<path d="M49.4 119.2 Q163.6 121.2 280.6 120.1 M290.7 130.1 Q289.5 270.7 290.5 410.4 M279.6 420.6 Q165.9 419.3 50.6 418.8 M41.2 410.9 Q40.5 269.9 38.9 130.0 M280 120 Q290 120 290 130 M290 410 Q290 420 280 420 M50 420 Q40 420 40 410 M40 130 Q40 120 50 120" fill="none" stroke="#1971c2" stroke-width="1.8" stroke-linecap="round" opacity="1"/>
+<path d="M50.4 120.2 Q166.2 120.5 281.2 121.1 M290.9 129.5 Q289.6 269.5 289.0 409.4 M281.2 420.2 Q164.8 419.4 50.6 421.1 M40.2 410.0 Q38.8 269.4 39.8 129.1 M280 120 Q290 120 290 130 M290 410 Q290 420 280 420 M50 420 Q40 420 40 410 M40 130 Q40 120 50 120" fill="none" stroke="#1971c2" stroke-width="1.08" stroke-linecap="round" opacity="0.7"/>
+<text xml:space="preserve" x="58" y="150" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#1e1e1e" text-anchor="start">Browser</text>
+<text xml:space="preserve" x="58" y="170" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#5c5c5c" text-anchor="start">React SPA, static on Vercel</text>
+<text xml:space="preserve" x="58" y="204" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#1e1e1e" text-anchor="start">Customer, trainer, admin views</text>
+<text xml:space="preserve" x="58" y="225" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#1e1e1e" text-anchor="start">TanStack Query cache</text>
+<text xml:space="preserve" x="58" y="246" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#1e1e1e" text-anchor="start">Polls every 2 s while pending,</text>
+<text xml:space="preserve" x="58" y="267" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#1e1e1e" text-anchor="start">  otherwise every 30 s</text>
+<text xml:space="preserve" x="58" y="288" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#1e1e1e" text-anchor="start">Clock offset from serverNow</text>
+<text xml:space="preserve" x="58" y="309" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#1e1e1e" text-anchor="start">JWT in localStorage</text>
+<text xml:space="preserve" x="58" y="330" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#1e1e1e" text-anchor="start">Idempotency-Key per booking</text>
+<rect x="40" y="490" width="250" height="120" rx="10" fill="#ffec99"/>
+<path d="M49.6 489.6 Q166.1 488.8 280.5 491.2 M289.7 499.4 Q290.0 549.1 289.6 599.8 M280.3 609.3 Q164.5 610.1 51.1 609.9 M40.4 600.0 Q41.0 550.4 40.0 500.5 M280 490 Q290 490 290 500 M290 600 Q290 610 280 610 M50 610 Q40 610 40 600 M40 500 Q40 490 50 490" fill="none" stroke="#e8590c" stroke-width="1.8" stroke-linecap="round" opacity="1"/>
+<path d="M50.6 489.3 Q166.2 489.7 280.2 489.6 M290.8 501.1 Q289.5 549.7 288.9 600.9 M279.0 608.8 Q163.8 609.7 51.4 609.2 M39.9 600.3 Q40.4 549.0 39.0 501.2 M280 490 Q290 490 290 500 M290 600 Q290 610 280 610 M50 610 Q40 610 40 600 M40 500 Q40 490 50 490" fill="none" stroke="#e8590c" stroke-width="1.08" stroke-linecap="round" opacity="0.7"/>
+<text xml:space="preserve" x="58" y="520" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#1e1e1e" text-anchor="start">MockPay hosted page</text>
+<text xml:space="preserve" x="58" y="546" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">/pay/:providerOrderId</text>
+<text xml:space="preserve" x="58" y="567" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">Stand-in gateway; swap for</text>
+<text xml:space="preserve" x="58" y="588" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">Razorpay or Cashfree sandbox</text>
+<rect x="430" y="120" width="470" height="720" rx="14" fill="#ffffff"/>
+<path d="M445.1 121.1 Q666.1 121.1 886.7 119.4 M898.8 132.6 Q898.6 479.3 900.3 825.2 M886.5 839.3 Q665.7 840.0 445.1 839.3 M428.9 826.0 Q429.6 481.1 428.6 135.2 M886 120 Q900 120 900 134 M900 826 Q900 840 886 840 M444 840 Q430 840 430 826 M430 134 Q430 120 444 120" fill="none" stroke="#495057" stroke-width="1.8" stroke-linecap="round" opacity="1"/>
+<path d="M442.7 121.1 Q665.4 121.2 885.1 121.3 M899.3 133.2 Q900.2 480.5 899.2 826.2 M886.6 840.6 Q663.7 840.8 444.0 838.7 M429.0 826.5 Q428.9 481.2 431.1 132.7 M886 120 Q900 120 900 134 M900 826 Q900 840 886 840 M444 840 Q430 840 430 826 M430 134 Q430 120 444 120" fill="none" stroke="#495057" stroke-width="1.08" stroke-linecap="round" opacity="0.7"/>
+<text xml:space="preserve" x="450" y="150" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#1e1e1e" text-anchor="start">Express API</text>
+<text xml:space="preserve" x="450" y="170" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#5c5c5c" text-anchor="start">Node 24, one process on Render. No state that matters.</text>
+<rect x="450" y="188" width="430" height="76" rx="8" fill="#f1f3f5"/>
+<path d="M459.4 189.3 Q666.1 189.0 872.7 187.8 M881.1 195.7 Q879.3 226.6 879.3 255.7 M871.6 264.3 Q666.1 264.2 458.7 263.5 M449.2 255.5 Q450.6 225.8 451.4 197.4 M872 188 Q880 188 880 196 M880 256 Q880 264 872 264 M458 264 Q450 264 450 256 M450 196 Q450 188 458 188" fill="none" stroke="#495057" stroke-width="1.4" stroke-linecap="round" opacity="1"/>
+<path d="M459.2 187.2 Q665.4 189.0 872.4 187.0 M880.8 197.2 Q880.0 226.2 879.9 255.1 M872.5 264.1 Q664.9 263.1 458.2 264.0 M450.7 254.7 Q450.7 225.6 449.4 196.1 M872 188 Q880 188 880 196 M880 256 Q880 264 872 264 M458 264 Q450 264 450 256 M450 196 Q450 188 458 188" fill="none" stroke="#495057" stroke-width="0.84" stroke-linecap="round" opacity="0.7"/>
+<text xml:space="preserve" x="466" y="210" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" fill="#1e1e1e" text-anchor="start">Every request</text>
+<text xml:space="preserve" x="466" y="232" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#5c5c5c" text-anchor="start">request id &gt; helmet &gt; CORS &gt; rate limit &gt; JSON 100 KB</text>
+<text xml:space="preserve" x="466" y="251" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#5c5c5c" text-anchor="start">&gt; JWT auth &gt; role &gt; zod &gt; controller &gt; service &gt; query</text>
+<rect x="450" y="282" width="430" height="250" rx="8" fill="#b2f2bb"/>
+<path d="M457.4 281.3 Q664.2 282.6 872.4 281.8 M880.9 291.2 Q878.8 407.8 881.1 524.5 M872.7 532.3 Q666.3 530.7 458.6 533.1 M448.8 522.9 Q448.7 406.0 448.8 288.6 M872 282 Q880 282 880 290 M880 524 Q880 532 872 532 M458 532 Q450 532 450 524 M450 290 Q450 282 458 282" fill="none" stroke="#2f9e44" stroke-width="1.8" stroke-linecap="round" opacity="1"/>
+<path d="M457.1 281.0 Q665.3 283.2 871.2 282.5 M881.4 289.8 Q879.3 406.9 880.5 524.8 M870.8 531.2 Q664.7 531.8 458.9 533.3 M450.0 522.9 Q449.0 408.2 449.2 290.3 M872 282 Q880 282 880 290 M880 524 Q880 532 872 532 M458 532 Q450 532 450 524 M450 290 Q450 282 458 282" fill="none" stroke="#2f9e44" stroke-width="1.08" stroke-linecap="round" opacity="0.7"/>
+<text xml:space="preserve" x="466" y="308" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1e1e1e" text-anchor="start">Booking transaction  (POST /v1/bookings)</text>
+<text xml:space="preserve" x="466" y="336" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">a. Same Idempotency-Key? return that booking</text>
+<text xml:space="preserve" x="466" y="357" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">b. Price from pricing_rules, never the client</text>
+<text xml:space="preserve" x="466" y="378" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">c. pg_advisory_xact_lock(zone): one at a time</text>
+<text xml:space="preserve" x="466" y="399" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">d. Expire unpaid holds older than 10 min</text>
+<text xml:space="preserve" x="466" y="420" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">e. Eligible: zone, hours, no time off, no overlap</text>
+<text xml:space="preserve" x="466" y="441" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">f. Rank: preferred &gt; fewest today &gt; nearest &gt; id</text>
+<text xml:space="preserve" x="466" y="462" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">g. INSERT in a SAVEPOINT; 23P01? next trainer</text>
+<text xml:space="preserve" x="466" y="483" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">h. pending_payment, 10-min hold, payment order</text>
+<text xml:space="preserve" x="466" y="504" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">   none fit: 409 NO_TRAINER_AVAILABLE + options</text>
+<rect x="450" y="550" width="430" height="110" rx="8" fill="#ffec99"/>
+<path d="M457.4 550.4 Q664.1 548.8 872.2 549.9 M879.8 557.5 Q881.4 603.8 878.6 650.6 M871.3 661.2 Q664.8 658.9 458.8 660.7 M451.3 652.8 Q449.8 606.0 450.5 558.2 M872 550 Q880 550 880 558 M880 652 Q880 660 872 660 M458 660 Q450 660 450 652 M450 558 Q450 550 458 550" fill="none" stroke="#e8590c" stroke-width="1.8" stroke-linecap="round" opacity="1"/>
+<path d="M458.0 550.0 Q664.6 549.7 872.2 550.6 M880.6 559.1 Q880.5 605.4 881.0 653.4 M873.3 661.3 Q664.8 660.0 457.6 658.8 M450.6 652.7 Q449.6 606.1 451.3 558.8 M872 550 Q880 550 880 558 M880 652 Q880 660 872 660 M458 660 Q450 660 450 652 M450 558 Q450 550 458 550" fill="none" stroke="#e8590c" stroke-width="1.08" stroke-linecap="round" opacity="0.7"/>
+<text xml:space="preserve" x="466" y="576" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1e1e1e" text-anchor="start">Payment webhook  (POST /v1/payments/webhook)</text>
+<text xml:space="preserve" x="466" y="602" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">HMAC-SHA256 over the raw body, timingSafeEqual</text>
+<text xml:space="preserve" x="466" y="622" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">Amount must match the snapshot, else 422</text>
+<text xml:space="preserve" x="466" y="642" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">Conditional UPDATEs; a replay changes nothing</text>
+<rect x="450" y="678" width="205" height="146" rx="8" fill="#d0bfff"/>
+<path d="M458.8 676.9 Q551.7 677.3 648.2 678.8 M655.1 685.8 Q655.4 751.6 656.0 816.2 M647.5 823.8 Q553.5 823.4 457.7 823.1 M451.1 816.9 Q450.2 750.2 449.5 686.5 M647 678 Q655 678 655 686 M655 816 Q655 824 647 824 M458 824 Q450 824 450 816 M450 686 Q450 678 458 678" fill="none" stroke="#6741d9" stroke-width="1.8" stroke-linecap="round" opacity="1"/>
+<path d="M457.5 679.2 Q553.6 676.9 645.6 677.0 M655.5 687.1 Q654.7 749.7 654.1 815.2 M646.1 822.9 Q553.8 824.6 458.4 822.6 M450.7 815.0 Q450.9 751.3 449.5 686.6 M647 678 Q655 678 655 686 M655 816 Q655 824 647 824 M458 824 Q450 824 450 816 M450 686 Q450 678 458 678" fill="none" stroke="#6741d9" stroke-width="1.08" stroke-linecap="round" opacity="0.7"/>
+<text xml:space="preserve" x="466" y="704" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1e1e1e" text-anchor="start">Sweep, every 30 s</text>
+<text xml:space="preserve" x="466" y="730" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">Complete sessions past</text>
+<text xml:space="preserve" x="466" y="749" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">  session_ends_at</text>
+<text xml:space="preserve" x="466" y="768" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">Expire unpaid holds</text>
+<text xml:space="preserve" x="466" y="787" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">Same conditional UPDATEs</text>
+<text xml:space="preserve" x="466" y="806" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">  reads run: no double work</text>
+<rect x="675" y="678" width="205" height="146" rx="8" fill="#f1f3f5"/>
+<path d="M683.2 678.8 Q778.8 678.1 872.6 678.7 M878.7 686.3 Q880.3 749.9 879.2 816.2 M872.3 824.4 Q776.8 823.2 683.9 823.3 M675.5 815.7 Q676.1 749.7 675.8 686.4 M872 678 Q880 678 880 686 M880 816 Q880 824 872 824 M683 824 Q675 824 675 816 M675 686 Q675 678 683 678" fill="none" stroke="#495057" stroke-width="1.4" stroke-linecap="round" opacity="1"/>
+<path d="M684.2 678.0 Q778.4 676.9 872.9 677.8 M880.6 687.1 Q881.0 751.8 881.0 815.1 M871.0 825.3 Q778.1 823.0 684.3 822.8 M676.2 817.0 Q673.8 750.3 676.3 685.4 M872 678 Q880 678 880 686 M880 816 Q880 824 872 824 M683 824 Q675 824 675 816 M675 686 Q675 678 683 678" fill="none" stroke="#495057" stroke-width="0.84" stroke-linecap="round" opacity="0.7"/>
+<text xml:space="preserve" x="691" y="704" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1e1e1e" text-anchor="start">Session timer</text>
+<text xml:space="preserve" x="691" y="730" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">Trainer taps start: server</text>
+<text xml:space="preserve" x="691" y="749" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">  sets ends = now + 60 min</text>
+<text xml:space="preserve" x="691" y="768" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">Phase from server clock,</text>
+<text xml:space="preserve" x="691" y="787" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">  warning at 55 min</text>
+<text xml:space="preserve" x="691" y="806" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">No client time trusted</text>
+<path d="M980 164 L980 576 A130 14 0 0 0 1240 576 L1240 164" fill="#a5d8ff" stroke="#1971c2" stroke-width="1.8"/>
+<ellipse cx="1110" cy="164" rx="130" ry="14" fill="#a5d8ff" stroke="#1971c2" stroke-width="1.8"/>
+<path d="M984.0 167.1 Q1109.5 166.2 1235.4 166.7" fill="none" stroke="#1971c2" stroke-width="0.8" opacity="0.5"/>
+<text xml:space="preserve" x="1110" y="210" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#1e1e1e" text-anchor="middle">PostgreSQL</text>
+<text xml:space="preserve" x="1110" y="230" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#5c5c5c" text-anchor="middle">Supabase, the only state</text>
+<text xml:space="preserve" x="998" y="270" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" fill="#1e1e1e" text-anchor="start">Rules the database enforces:</text>
+<text xml:space="preserve" x="998" y="296" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">EXCLUDE gist: no trainer</text>
+<text xml:space="preserve" x="998" y="318" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">  overlap (+15 min buffer)</text>
+<text xml:space="preserve" x="998" y="340" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">EXCLUDE gist: no customer</text>
+<text xml:space="preserve" x="998" y="362" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">  overlap across tabs</text>
+<text xml:space="preserve" x="998" y="384" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">UNIQUE (customer, key)</text>
+<text xml:space="preserve" x="998" y="406" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">  + request hash: idempotency</text>
+<text xml:space="preserve" x="998" y="428" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">UNIQUE (booking, reason)</text>
+<text xml:space="preserve" x="998" y="450" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">  on package_ledger</text>
+<text xml:space="preserve" x="998" y="472" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">UNIQUE provider_payment_id</text>
+<text xml:space="preserve" x="998" y="494" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">Money in integer paise</text>
+<text xml:space="preserve" x="998" y="516" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">Price snapshot per booking</text>
+<rect x="980" y="690" width="260" height="110" rx="10" fill="#f1f3f5"/>
+<path d="M988.8 688.7 Q1109.9 689.2 1228.9 690.4 M1240.6 700.0 Q1239.9 745.9 1240.6 789.7 M1230.8 801.3 Q1110.3 801.3 990.6 800.3 M978.8 790.6 Q980.8 744.1 980.4 699.8 M1230 690 Q1240 690 1240 700 M1240 790 Q1240 800 1230 800 M990 800 Q980 800 980 790 M980 700 Q980 690 990 690" fill="none" stroke="#495057" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="8 6" opacity="1"/>
+<text xml:space="preserve" x="998" y="720" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1e1e1e" text-anchor="start">OpenRouter  (optional)</text>
+<text xml:space="preserve" x="998" y="746" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">Workout suggestions</text>
+<text xml:space="preserve" x="998" y="765" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">Server-side key; no name,</text>
+<text xml:space="preserve" x="998" y="784" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1e1e1e" text-anchor="start">email or id is sent</text>
+<path d="M290.0 199.2 Q370.1 249.8 449.0 299.1" fill="none" stroke="#1e1e1e" stroke-width="1.9" stroke-linecap="round"/>
+<path d="M437.1 298.6 L450 300 L443.1 289.0" fill="none" stroke="#1e1e1e" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="302" cy="190" r="12" fill="#1e1e1e"/>
+<text xml:space="preserve" x="302" y="195" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+<text xml:space="preserve" x="320" y="195" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#1e1e1e" text-anchor="start">request</text>
+<path d="M889.3 340.3 Q934.7 339.7 979.2 339.0" fill="none" stroke="#2f9e44" stroke-width="1.9" stroke-linecap="round"/>
+<path d="M968.3 345.7 L980 340 L968.3 334.3" fill="none" stroke="#2f9e44" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M901.7 334.3 L890 340 L901.7 345.7" fill="none" stroke="#2f9e44" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="902" cy="322" r="12" fill="#2f9e44"/>
+<text xml:space="preserve" x="902" y="327" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+<text xml:space="preserve" x="920" y="327" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#1e1e1e" text-anchor="start">one tx</text>
+<path d="M450.8 499.0 Q368.9 440.7 290.6 379.6" fill="none" stroke="#1e1e1e" stroke-width="1.9" stroke-linecap="round"/>
+<path d="M302.8 382.5 L290 380 L296.0 391.5" fill="none" stroke="#1e1e1e" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="306" cy="505" r="12" fill="#1e1e1e"/>
+<text xml:space="preserve" x="306" y="510" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+<text xml:space="preserve" x="324" y="510" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#1e1e1e" text-anchor="start">201 + hold</text>
+<path d="M165.7 418.9 Q164.8 455.9 166.1 489.4" fill="none" stroke="#e8590c" stroke-width="1.9" stroke-linecap="round"/>
+<path d="M159.3 478.3 L165 490 L170.7 478.3" fill="none" stroke="#e8590c" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="182" cy="452" r="12" fill="#e8590c"/>
+<text xml:space="preserve" x="182" y="457" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">4</text>
+<text xml:space="preserve" x="200" y="457" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#1e1e1e" text-anchor="start">pay</text>
+<path d="M289.0 574.3 Q370.3 587.3 450.6 600.6" fill="none" stroke="#e8590c" stroke-width="1.9" stroke-linecap="round"/>
+<path d="M437.6 603.8 L450 600 L439.3 592.6" fill="none" stroke="#e8590c" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="302" cy="620" r="12" fill="#e8590c"/>
+<text xml:space="preserve" x="302" y="625" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">5</text>
+<text xml:space="preserve" x="320" y="625" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#1e1e1e" text-anchor="start">webhook</text>
+<path d="M880.7 609.6 Q931.9 570.8 984.9 529.6" fill="none" stroke="#e8590c" stroke-width="1.9" stroke-linecap="round"/>
+<path d="M979.1 541.6 L985 530 L972.3 532.6" fill="none" stroke="#e8590c" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="905" cy="610" r="12" fill="#e8590c"/>
+<text xml:space="preserve" x="905" y="615" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">6</text>
+<text xml:space="preserve" x="923" y="615" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#1e1e1e" text-anchor="start">confirm</text>
+<path d="M900.8 745.4 Q939.5 745.8 980.0 745.8" fill="none" stroke="#495057" stroke-width="1.9" stroke-linecap="round" stroke-dasharray="7 6"/>
+<path d="M968.3 750.7 L980 745 L968.3 739.3" fill="none" stroke="#495057" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="52" cy="870" r="12" fill="#1971c2"/>
+<text xml:space="preserve" x="52" y="875" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">7</text>
+<text xml:space="preserve" x="70" y="875" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#1e1e1e" text-anchor="start">The client's poll sees confirmed and the trainer is notified. A browser redirect never confirms a payment.</text>
+</svg>

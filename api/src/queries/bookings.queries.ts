@@ -4,18 +4,16 @@ import type { AssignmentDecision, BookingRow } from "../types/index.js";
 import type { Cursor } from "../lib/cursor.js";
 
 const SELECT = `
-  SELECT b.*, cu.name AS customer_name, t.user_id AS trainer_user_id, tu.name AS trainer_name,
-    sr.customer_rating, sr.customer_comment,
+    SELECT b.*, cu.name AS customer_name, t.user_id AS trainer_user_id, tu.name AS trainer_name, sr.customer_rating, sr.customer_comment,
     (SELECT r.id FROM bookings r WHERE r.rescheduled_from = b.id LIMIT 1) AS rescheduled_to,
-    (COALESCE(o.status = 'refunded', false)
-       OR EXISTS (SELECT 1 FROM package_ledger l WHERE l.booking_id = b.id AND l.reason = 'refund')) AS refunded,
+    (COALESCE(o.status = 'refunded', false) OR EXISTS (SELECT 1 FROM package_ledger l WHERE l.booking_id = b.id AND l.reason = 'refund')) AS refunded,
     o.status AS order_status, o.provider_order_id
-  FROM bookings b
-  JOIN users cu ON cu.id = b.customer_id
-  JOIN trainers t ON t.id = b.trainer_id
-  JOIN users tu ON tu.id = t.user_id
-  LEFT JOIN payment_orders o ON o.booking_id = b.id
-  LEFT JOIN session_records sr ON sr.booking_id = b.id`;
+    FROM bookings b
+    JOIN users cu ON cu.id = b.customer_id
+    JOIN trainers t ON t.id = b.trainer_id
+    JOIN users tu ON tu.id = t.user_id
+    LEFT JOIN payment_orders o ON o.booking_id = b.id
+    LEFT JOIN session_records sr ON sr.booking_id = b.id`;
 
 // A trainer only ever sees bookings that were paid for (or covered by a package).
 const NOT_FOR_TRAINERS = "b.status NOT IN ('pending_payment', 'payment_failed', 'expired')";
@@ -65,10 +63,8 @@ export async function insertBooking(db: Db, b: NewBooking) {
     await db.query("SAVEPOINT insert_booking");
     try {
         const { rows } = await db.query(
-            `INSERT INTO bookings (customer_id, trainer_id, mode, starts_at, ends_at, busy_until, rescheduled_from,
-         is_peak, session_price_paise, commission_paise, total_paise, package_id, idempotency_key, request_hash, assignment,
-         status, hold_expires_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) RETURNING id`,
+            `INSERT INTO bookings (customer_id, trainer_id, mode, starts_at, ends_at, busy_until, rescheduled_from, is_peak, session_price_paise, commission_paise, total_paise, package_id, idempotency_key, request_hash, assignment, status, hold_expires_at)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) RETURNING id`,
             [
                 b.customerId,
                 b.trainerId,
@@ -145,7 +141,7 @@ async function list(db: Db, f: Filters, page: Page): Promise<BookingRow[]> {
     params.push(page.limit + 1); // one extra row tells the caller whether there is a next page
     const order = asc ? "ASC" : "DESC";
     const sql = `${SELECT} ${where.length ? "WHERE " + where.join(" AND ") : ""}
-               ORDER BY b.starts_at ${order}, b.id ${order} LIMIT $${params.length}`;
+        ORDER BY b.starts_at ${order}, b.id ${order} LIMIT $${params.length}`;
     return (await db.query(sql, params)).rows;
 }
 
@@ -158,7 +154,7 @@ export const listForAdmin = (db: Db, f: Omit<Filters, "view">, page: Page) => li
 export async function markStarted(db: Db, id: number, trainerId: number, now: Date, sessionEndsAt: Date) {
     const { rowCount } = await db.query(
         `UPDATE bookings SET status = 'in_progress', started_at = $3, session_ends_at = $4
-     WHERE id = $1 AND trainer_id = $2 AND status = 'confirmed'`,
+            WHERE id = $1 AND trainer_id = $2 AND status = 'confirmed'`,
         [id, trainerId, now, sessionEndsAt],
     );
     return rowCount === 1;
@@ -168,7 +164,7 @@ export async function markStarted(db: Db, id: number, trainerId: number, now: Da
 export async function cancelConfirmed(db: Db, id: number, now: Date, reason: "customer" | "rescheduled") {
     const { rowCount } = await db.query(
         `UPDATE bookings SET status = 'cancelled', cancelled_at = $2, cancel_reason = $3
-     WHERE id = $1 AND status = 'confirmed'`,
+            WHERE id = $1 AND status = 'confirmed'`,
         [id, now, reason],
     );
     return rowCount === 1;
@@ -179,19 +175,32 @@ export async function cancelConfirmed(db: Db, id: number, now: Date, reason: "cu
 export async function completeDue(db: Db, now: Date, message: string) {
     const { rows } = await db.query(
         `WITH done AS (
-       UPDATE bookings b SET status = 'completed', completed_at = b.session_ends_at
-       WHERE b.status = 'in_progress' AND b.session_ends_at <= $1
-       RETURNING b.id, b.customer_id, b.trainer_id
-     ), written AS (
-       INSERT INTO notifications (user_id, kind, booking_id, message)
-       SELECT u.user_id, 'session_completed', done.id, $2
-       FROM done
-       CROSS JOIN LATERAL (VALUES (done.customer_id), ((SELECT user_id FROM trainers WHERE id = done.trainer_id))) AS u(user_id)
-     )
-     SELECT id FROM done`,
+                UPDATE bookings b SET status = 'completed', completed_at = b.session_ends_at WHERE b.status = 'in_progress' AND b.session_ends_at <= $1 RETURNING b.id, b.customer_id, b.trainer_id
+            ), written AS (
+                INSERT INTO notifications (user_id, kind, booking_id, message)
+                SELECT u.user_id, 'session_completed', done.id, $2
+                FROM done CROSS JOIN LATERAL (VALUES (done.customer_id), ((SELECT user_id FROM trainers WHERE id = done.trainer_id))) AS u(user_id)
+            )
+            SELECT id FROM done`,
         [now, message],
     );
     return rows.map((r) => r.id as number);
+}
+
+// Warns both people once a running session passes the warning mark. The partial unique index on notifications makes
+// racing callers write it once; only rows actually inserted come back.
+export async function warnDue(db: Db, now: Date, warningMinutes: number, message: string) {
+    const { rows } = await db.query(
+        `INSERT INTO notifications (user_id, kind, booking_id, message)
+            SELECT u.user_id, 'session_warning', b.id, $3
+            FROM bookings b
+            CROSS JOIN LATERAL (VALUES (b.customer_id), ((SELECT user_id FROM trainers WHERE id = b.trainer_id))) AS u(user_id)
+            WHERE b.status = 'in_progress' AND b.started_at + make_interval(mins => $2) <= $1 AND b.session_ends_at > $1
+            ON CONFLICT (user_id, booking_id) WHERE kind = 'session_warning' DO NOTHING
+            RETURNING booking_id`,
+        [now, warningMinutes, message],
+    );
+    return rows.map((r) => r.booking_id as number);
 }
 
 // A hold that ran out frees its slot: the booking and its order both become 'expired' in one statement.
@@ -200,12 +209,11 @@ export async function completeDue(db: Db, now: Date, message: string) {
 export async function expireDueHolds(db: Db, now: Date) {
     const { rows } = await db.query(
         `WITH due AS (
-       UPDATE bookings SET status = 'expired'
-       WHERE status = 'pending_payment' AND hold_expires_at <= $1 RETURNING id
-     ), orders AS (
-       UPDATE payment_orders o SET status = 'expired' FROM due WHERE o.booking_id = due.id AND o.status = 'created'
-     )
-     SELECT id FROM due`,
+                UPDATE bookings SET status = 'expired' WHERE status = 'pending_payment' AND hold_expires_at <= $1 RETURNING id
+            ), orders AS (
+                UPDATE payment_orders o SET status = 'expired' FROM due WHERE o.booking_id = due.id AND o.status = 'created'
+            )
+            SELECT id FROM due`,
         [now],
     );
     return rows.map((r) => r.id as number);
@@ -241,12 +249,11 @@ export async function zoneOfBooking(db: Db, id: number) {
 // the backstop, and a savepoint keeps the transaction usable if they fire.
 export async function reconfirmExpired(db: Db, id: number, now: Date) {
     const { rowCount: clashes } = await db.query(
-        `SELECT 1 FROM bookings b JOIN bookings o ON o.id <> b.id AND o.status <> ALL($2)
-       AND ((o.trainer_id = b.trainer_id
-             AND tstzrange(o.starts_at, o.busy_until, '[)') && tstzrange(b.starts_at, b.busy_until, '[)'))
-         OR (o.customer_id = b.customer_id
-             AND tstzrange(o.starts_at, o.ends_at, '[)') && tstzrange(b.starts_at, b.ends_at, '[)')))
-     WHERE b.id = $1 LIMIT 1`,
+        `SELECT 1 FROM bookings b
+            JOIN bookings o ON o.id <> b.id AND o.status <> ALL($2)
+                AND ((o.trainer_id = b.trainer_id AND tstzrange(o.starts_at, o.busy_until, '[)') && tstzrange(b.starts_at, b.busy_until, '[)'))
+                  OR (o.customer_id = b.customer_id AND tstzrange(o.starts_at, o.ends_at, '[)') && tstzrange(b.starts_at, b.ends_at, '[)')))
+            WHERE b.id = $1 LIMIT 1`,
         [id, [...FINISHED_STATUSES]],
     );
     if (clashes) return false;
@@ -268,8 +275,7 @@ export async function reconfirmExpired(db: Db, id: number, now: Date) {
 
 export async function hasActiveBookingBetween(db: Db, trainerId: number, from: Date, to: Date) {
     const { rowCount } = await db.query(
-        `SELECT 1 FROM bookings WHERE trainer_id = $1 AND status <> ALL($4)
-       AND tstzrange(starts_at, busy_until, '[)') && tstzrange($2, $3, '[)') LIMIT 1`,
+        `SELECT 1 FROM bookings WHERE trainer_id = $1 AND status <> ALL($4) AND tstzrange(starts_at, busy_until, '[)') && tstzrange($2, $3, '[)') LIMIT 1`,
         [trainerId, from, to, [...FINISHED_STATUSES]],
     );
     return (rowCount ?? 0) > 0;

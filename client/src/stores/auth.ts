@@ -17,6 +17,6 @@ export const useAuth = create<AuthState>()(
             signIn: (token, user) => set({ token, user }),
             signOut: () => set({ token: null, user: null }),
         }),
-        { name: "zuryo-auth", storage: createJSONStorage(() => sessionStorage) },
+        { name: "zuryo-auth", storage: createJSONStorage(() => localStorage) },
     ),
 );

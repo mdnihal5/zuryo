@@ -105,7 +105,7 @@ Swapping to a real sandbox (Cashfree, Razorpay) replaces order creation, the hos
 - helmet, CORS allowlist from env, zod on every input, 100 KB body limit.
 - Secrets only from environment, parsed once at boot with zod (missing or short values stop the server). `.env` is git-ignored; Render generates the JWT and webhook secrets.
 - The LLM receives only age, weight, goals, level, preferences and recent exercises. No name, email or id.
-- The token is kept in `sessionStorage`. That is readable by script injected into the page; an httpOnly cookie would avoid that but is awkward for a later React Native client. Accepted for the MVP.
+- The token is kept in `localStorage`, so every tab stays signed in until the 12-hour expiry or logout (which bumps `token_version`). Script injected into the page could read it, exactly as it could read `sessionStorage`; production would keep a short-lived access token in memory and a refresh token in an httpOnly cookie. Accepted for the MVP.
 
 ## Logging
 

@@ -11,19 +11,18 @@ export type PackageRow = {
 };
 
 const WITH_USAGE = `
-  SELECT p.id, p.sessions_total, p.status, p.created_at, COALESCE(-SUM(l.delta), 0)::int AS used,
-    o.provider_order_id, o.status AS order_status
-  FROM packages p
-  LEFT JOIN package_ledger l ON l.package_id = p.id
-  LEFT JOIN payment_orders o ON o.package_id = p.id`;
+    SELECT p.id, p.sessions_total, p.status, p.created_at, COALESCE(-SUM(l.delta), 0)::int AS used, o.provider_order_id, o.status AS order_status
+    FROM packages p
+    LEFT JOIN package_ledger l ON l.package_id = p.id
+    LEFT JOIN payment_orders o ON o.package_id = p.id`;
 const GROUP = "GROUP BY p.id, o.id";
 
 // Returns null when this (customer, key) already bought a package, so a retry cannot buy a second one.
 export async function insertIfNew(db: Db, customerId: number, sessions: number, key: string, requestHash: string) {
     const { rows } = await db.query(
         `INSERT INTO packages (customer_id, sessions_total, idempotency_key, request_hash, status)
-     VALUES ($1,$2,$3,$4,'pending_payment')
-     ON CONFLICT (customer_id, idempotency_key) DO NOTHING RETURNING id`,
+            VALUES ($1,$2,$3,$4,'pending_payment')
+            ON CONFLICT (customer_id, idempotency_key) DO NOTHING RETURNING id`,
         [customerId, sessions, key, requestHash],
     );
     return (rows[0]?.id as number | undefined) ?? null;
@@ -73,7 +72,7 @@ export async function insertLedger(
 ) {
     const { rowCount } = await db.query(
         `INSERT INTO package_ledger (package_id, booking_id, delta, reason) VALUES ($1,$2,$3,$4)
-     ON CONFLICT (booking_id, reason) DO NOTHING`,
+            ON CONFLICT (booking_id, reason) DO NOTHING`,
         [packageId, bookingId, delta, reason],
     );
     return rowCount === 1;

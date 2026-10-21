@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { api, ApiError } from "../../api";
+import { Notifications } from "../../components/Notifications";
 import { Avatar, Chip, ErrorState, Loading, buttonClass } from "../../components/ui";
 import { formatDayTime } from "../../lib/format";
 import { useBookings, usePackages, useProfile, useRecommendation } from "../../queries";
@@ -135,8 +136,8 @@ export default function Home() {
                 <p className="mb-4 text-sm font-bold text-accent">Hi {user.name.split(" ")[0]}</p>
                 <h1 className="text-3xl font-extrabold tracking-display sm:text-4xl lg:text-4xl">Strong, on call.</h1>
                 <p className="mx-auto mt-4 max-w-xl text-md text-muted lg:text-lg">
-                    A certified trainer from your own society, at your door within the hour. Or pick a slot that suits
-                    your week.
+                    A trainer who serves your society, at your door within the hour. Or pick a slot that suits your
+                    week.
                 </p>
                 <div className="mt-8 flex flex-wrap justify-center gap-3">
                     <button onClick={bookInstant} className={buttonClass("primary")}>
@@ -186,6 +187,10 @@ export default function Home() {
                     <Recommended />
                 </div>
             </section>
+
+            <div className="max-w-3xl">
+                <Notifications />
+            </div>
 
             <section>
                 <h2 className="text-2xl font-extrabold tracking-display">Trainers near you</h2>

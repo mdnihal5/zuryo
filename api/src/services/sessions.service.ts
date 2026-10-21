@@ -1,7 +1,7 @@
 import { pool } from "../db/pool.js";
 import * as bookingsQueries from "../queries/bookings.queries.js";
 import * as recordsQueries from "../queries/session-records.queries.js";
-import { SESSION_MINUTES, EARLY_START_MINUTES } from "../config/constants.js";
+import { SESSION_MINUTES, WARNING_MINUTES, EARLY_START_MINUTES } from "../config/constants.js";
 import { addMinutes } from "../lib/ist.js";
 import { conflict, notFound } from "../lib/http-error.js";
 import { toBookingView } from "../lib/booking.mapper.js";
@@ -17,6 +17,13 @@ export async function completeDueSessions(now = new Date(), by: "read" | "sweep"
         log.info("session.completed", { bookingId: id, by });
         log.info("notification.written", { kind: "session_completed", bookingId: id });
     }
+    const warned = await bookingsQueries.warnDue(
+        pool,
+        now,
+        WARNING_MINUTES,
+        `Session ends in ${SESSION_MINUTES - WARNING_MINUTES} minutes.`,
+    );
+    for (const id of warned) log.info("notification.written", { kind: "session_warning", bookingId: id });
     return done.length;
 }
 

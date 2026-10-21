@@ -11,6 +11,8 @@ export async function askModel(system: string, user: string): Promise<string> {
             temperature: 0.3,
             max_tokens: 700,
             response_format: { type: "json_object" },
+            // Reasoning models otherwise spend the whole token budget thinking and return empty content.
+            reasoning: { enabled: false },
             messages: [
                 { role: "system", content: system },
                 { role: "user", content: user },
